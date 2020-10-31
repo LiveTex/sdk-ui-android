@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="ru.livetex.sdk">
+	package="ru.livetex.sdkui">
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -10,11 +10,11 @@
 		android:requestLegacyExternalStorage="true">
 
 		<activity
-			android:name="ru.livetex.sdk.ui.chat.ChatActivity"
+			android:name=".chat.ChatActivity"
 			android:exported="true"
 			android:screenOrientation="portrait"/>
 
-		<activity android:name="ru.livetex.sdk.ui.chat.image.ImageActivity" />
+		<activity android:name=".chat.image.ImageActivity" />
 
 		<!-- 3rd party -->
 		<activity
