@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "737603167208",
+    "firebase_url": "https://livetex-demo-v2.firebaseio.com",
+    "project_id": "livetex-demo-v2",
+    "storage_bucket": "livetex-demo-v2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737603167208:android:0c4201912de6643f747a5d",
+        "android_client_info": {
+          "package_name": "ru.livetex.demoapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "737603167208-kgj293ugncto5jtv0vrik45l3r0qhneu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJlCx1JFQVk5jpWYmv0q114wBcCyFXVIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "737603167208-kgj293ugncto5jtv0vrik45l3r0qhneu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

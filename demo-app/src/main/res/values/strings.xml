@@ -1,0 +1,4 @@
+<resources>
+	<string name="app_name">LiveTex Messaging</string>
+	<string name="notifications_channel_name">Chat messages channel</string>
+</resources>

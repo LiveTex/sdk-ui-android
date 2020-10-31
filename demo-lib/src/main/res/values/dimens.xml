@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="chat_image_corner_radius">15dp</dimen>
+	<dimen name="chat_upload_preview_corner_radius">10dp</dimen>
+	<dimen name="chat_message_file_icon_padding">6dp</dimen>
+	<dimen name="chat_message_indicator_size">14dp</dimen>
+
+	<dimen name="chat_message_link_preview_width">200dp</dimen>
+	<dimen name="chat_message_link_preview_height">100dp</dimen>
+</resources>
