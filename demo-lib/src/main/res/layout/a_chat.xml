@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#ffffff"
+	tools:context=".ui.chat.ChatActivity">
+
+	<androidx.appcompat.widget.Toolbar
+		android:id="@+id/toolbarView"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		app:contentInsetStartWithNavigation="18dp"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		app:logo="@drawable/logo"
+		app:title="" />
+
+	<TextView
+		android:id="@+id/titleView"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center"
+		android:text="Чат"
+		android:textSize="24sp"
+		app:layout_constraintBottom_toBottomOf="@id/toolbarView"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="@id/toolbarView" />
+
+	<androidx.recyclerview.widget.RecyclerView
+		android:id="@+id/messagesView"
+		android:layout_width="0dp"
+		android:layout_height="0dp"
+		android:scrollbarAlwaysDrawVerticalTrack="true"
+		android:fadeScrollbars="false"
+		android:scrollbars="vertical"
+		app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+		app:layout_constraintBottom_toTopOf="@+id/bottomBarrier"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@+id/feedbackContainerView"
+		app:stackFromEnd="true"
+		tools:listitem="@layout/i_chat_message_in" />
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:id="@+id/feedbackContainerView"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:background="#efefef"
+		android:padding="10dp"
+		android:visibility="gone"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/toolbarView"
+		tools:visibility="visible">
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Оцените качество обслуживания"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent" />
+
+		<ImageView
+			android:id="@+id/feedbackPositiveView"
+			android:layout_width="24dp"
+			android:layout_height="24dp"
+			android:layout_marginEnd="20dp"
+			android:background="?attr/selectableItemBackgroundBorderless"
+			android:src="@drawable/thumbup"
+			app:tint="@android:color/holo_green_dark"
+			app:layout_constraintEnd_toStartOf="@+id/feedbackNegativeView"
+			app:layout_constraintTop_toTopOf="parent" />
+
+		<ImageView
+			android:id="@+id/feedbackNegativeView"
+			android:layout_width="24dp"
+			android:layout_height="24dp"
+			android:background="?attr/selectableItemBackgroundBorderless"
+			android:src="@drawable/thumbdown"
+			app:tint="@android:color/holo_red_dark"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintTop_toTopOf="parent" />
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+	<androidx.constraintlayout.widget.Barrier
+		android:id="@+id/bottomBarrier"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		app:barrierDirection="top"
+		app:constraint_referenced_ids="inputContainerView,attributesContainerView,departmentsContainerView"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintStart_toStartOf="parent" />
+
+	<LinearLayout
+		android:id="@+id/attributesContainerView"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="40dp"
+		android:orientation="vertical"
+		android:visibility="gone"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		tools:visibility="gone">
+
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="60dp"
+			android:layout_marginTop="10dp"
+			android:layout_marginEnd="60dp"
+			app:cardBackgroundColor="#ffffff"
+			app:cardCornerRadius="15dp"
+			app:cardElevation="10dp"
+			app:cardMaxElevation="10dp">
+
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical">
+
+				<EditText
+					android:id="@+id/attributesNameView"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:background="#ffffff"
+					android:hint="Имя"
+					android:inputType="textPersonName"
+					android:maxLength="100"
+					android:padding="24dp"
+					android:singleLine="true" />
+
+				<View
+					android:layout_width="match_parent"
+					android:layout_height="1dp"
+					android:background="#E5E5E5" />
+
+				<EditText
+					android:id="@+id/attributesPhoneView"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:background="#ffffff"
+					android:hint="Телефон"
+					android:inputType="phone"
+					android:maxLength="100"
+					android:padding="24dp"
+					android:singleLine="true" />
+
+				<View
+					android:layout_width="match_parent"
+					android:layout_height="1dp"
+					android:background="#E5E5E5" />
+
+				<EditText
+					android:id="@+id/attributesEmailView"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:background="#ffffff"
+					android:hint="E-mail"
+					android:inputType="textEmailAddress"
+					android:maxLength="100"
+					android:padding="24dp"
+					android:singleLine="true" />
+			</LinearLayout>
+
+		</com.google.android.material.card.MaterialCardView>
+
+		<com.google.android.material.button.MaterialButton
+			android:id="@+id/attributesSendView"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="60dp"
+			android:layout_marginTop="8dp"
+			android:layout_marginEnd="60dp"
+			android:paddingTop="14dp"
+			android:paddingBottom="14dp"
+			android:text="Отправить"
+			android:textAllCaps="false"
+			android:textSize="18sp"
+			app:backgroundTint="#24973E"
+			app:cornerRadius="15dp" />
+	</LinearLayout>
+
+	<LinearLayout
+		android:id="@+id/departmentsContainerView"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:visibility="gone"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		tools:visibility="gone">
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="center"
+			android:padding="10dp"
+			android:text="Выберите куда направить ваше обращение"
+			android:textColor="#757B85"
+			android:textSize="12sp" />
+
+		<LinearLayout
+			android:id="@+id/departmentsButtonContainerView"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:background="#ECEDF1"
+			android:orientation="vertical"
+			android:padding="8dp" />
+	</LinearLayout>
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:id="@+id/inputContainerView"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="18dp"
+		android:layout_marginEnd="18dp"
+		android:layout_marginBottom="18dp"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		tools:visibility="visible">
+
+		<ImageView
+			android:id="@+id/addView"
+			android:layout_width="32dp"
+			android:layout_height="42dp"
+			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
+			android:focusable="true"
+			android:paddingTop="5dp"
+			android:paddingBottom="5dp"
+			android:src="@drawable/plus"
+			app:tint="@color/add_enabled_disabled"
+			app:layout_constraintBottom_toBottomOf="@id/inputContainerView"
+			app:layout_constraintStart_toStartOf="parent" />
+
+		<androidx.constraintlayout.widget.ConstraintLayout
+			android:id="@+id/inputFieldContainerView"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="8dp"
+			android:layout_marginEnd="8dp"
+			app:layout_constraintEnd_toStartOf="@+id/sendView"
+			app:layout_constraintStart_toEndOf="@+id/addView"
+			app:layout_constraintTop_toTopOf="parent">
+
+			<ImageView
+				android:id="@+id/filePreviewView"
+				android:layout_width="80dp"
+				android:layout_height="92dp"
+				android:layout_marginStart="14dp"
+				android:paddingTop="12dp"
+				android:layout_marginBottom="6dp"
+				android:adjustViewBounds="true"
+				android:visibility="gone"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintBottom_toTopOf="@id/inputView"
+				tools:src="@drawable/logo"
+				tools:visibility="gone" />
+
+			<TextView
+				android:id="@+id/fileNameView"
+				android:layout_width="0dp"
+				android:layout_height="0dp"
+				android:layout_marginStart="6dp"
+				android:ellipsize="end"
+				android:textColor="@android:color/black"
+				android:paddingTop="6dp"
+				android:textSize="16sp"
+				android:visibility="gone"
+				app:layout_constraintBottom_toBottomOf="@+id/filePreviewView"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toEndOf="@+id/filePreviewView"
+				app:layout_constraintTop_toTopOf="@+id/filePreviewView"
+				tools:text="filename"
+				tools:visibility="gone" />
+
+			<ImageView
+				android:id="@+id/filePreviewDeleteView"
+				android:layout_width="32dp"
+				android:layout_height="32dp"
+				android:clickable="true"
+				android:focusable="true"
+				android:layout_marginTop="6dp"
+				android:paddingStart="16dp"
+				android:paddingBottom="16dp"
+				android:src="@drawable/close_circled"
+				android:visibility="gone"
+				app:layout_constraintEnd_toEndOf="@+id/filePreviewView"
+				app:layout_constraintTop_toTopOf="@+id/filePreviewView"
+				tools:visibility="gone" />
+
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:id="@+id/quoteContainerView"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="6dp"
+				android:layout_marginBottom="8dp"
+				android:background="@android:color/white"
+				android:visibility="gone"
+				app:layout_constraintBottom_toTopOf="@+id/inputView"
+				app:layout_constraintEnd_toEndOf="@id/inputView"
+				app:layout_constraintStart_toStartOf="@id/inputView"
+				app:layout_constraintTop_toBottomOf="@id/filePreviewView"
+				tools:visibility="gone">
+
+				<View
+					android:id="@+id/quoteSeparatorView"
+					android:layout_width="2dp"
+					android:layout_height="0dp"
+					android:background="#3E7AD7"
+					app:layout_constraintBottom_toBottomOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toTopOf="parent" />
+
+				<TextView
+					android:id="@+id/quoteView"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_marginStart="8dp"
+					android:ellipsize="end"
+					android:maxLines="2"
+					android:textColor="@android:color/black"
+					app:layout_constraintBottom_toBottomOf="parent"
+					app:layout_constraintEnd_toStartOf="@+id/quoteCloseView"
+					app:layout_constraintStart_toEndOf="@+id/quoteSeparatorView"
+					app:layout_constraintTop_toTopOf="parent"
+					tools:text="123" />
+
+				<ImageView
+					android:id="@+id/quoteCloseView"
+					android:layout_width="36dp"
+					android:layout_height="36dp"
+					android:background="?attr/selectableItemBackgroundBorderless"
+					android:padding="10dp"
+					android:src="@drawable/close"
+					app:layout_constraintBottom_toBottomOf="parent"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintTop_toTopOf="parent" />
+			</androidx.constraintlayout.widget.ConstraintLayout>
+
+			<EditText
+				android:id="@+id/inputView"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="6dp"
+				android:background="@drawable/bg_input_field"
+				android:focusedByDefault="false"
+				android:hint="Введите сообщение"
+				android:imeOptions="actionSend"
+				android:importantForAutofill="no"
+				android:inputType="textCapSentences"
+				android:maxLength="4000"
+				android:paddingStart="16dp"
+				android:paddingTop="10dp"
+				android:paddingEnd="16dp"
+				android:paddingBottom="10dp"
+				android:singleLine="true"
+				android:textColor="@android:color/black"
+				android:textColorHint="#C4C4C4"
+				android:textSize="18sp"
+				app:layout_constraintBottom_toBottomOf="parent"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@+id/quoteContainerView"
+				app:layout_goneMarginTop="0dp" />
+		</androidx.constraintlayout.widget.ConstraintLayout>
+
+		<ImageView
+			android:id="@+id/sendView"
+			android:layout_width="32dp"
+			android:layout_height="42dp"
+			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
+			android:focusable="true"
+			android:paddingTop="5dp"
+			android:paddingBottom="5dp"
+			android:src="@drawable/send"
+			app:tint="@color/control_enabled_disabled"
+			app:layout_constraintBottom_toBottomOf="@+id/inputContainerView"
+			app:layout_constraintEnd_toEndOf="parent" />
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
