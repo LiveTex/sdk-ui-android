@@ -46,18 +46,18 @@ dependencies {
 
 ```java
 <activity
-			android:name="ru.livetex.sdk.ui.chat.ChatActivity"
-			android:theme="@style/Theme.Chat"
-			android:screenOrientation="portrait" />
+	android:name="ru.livetex.sdk.ui.chat.ChatActivity"
+	android:theme="@style/Theme.Chat"
+	android:screenOrientation="portrait" />
 ```
 
 В styles.xml добавьте запись вида
 
 ```java
-	<style name="Theme.Chat" parent="Theme.YourAppTheme">
-		<item name="windowActionBar">false</item>
-		<item name="windowNoTitle">true</item>
-	</style>
+<style name="Theme.Chat" parent="Theme.YourAppTheme">
+	<item name="windowActionBar">false</item>
+	<item name="windowNoTitle">true</item>
+</style>
 ```
 
 где Theme.YourAppTheme это тема вашего приложения. **Если она не Material**, сделайте наследование от Theme.MaterialComponents.*.Bridge . В будущем планируем добавить возможности кастомизации.
