@@ -6,7 +6,6 @@ import android.util.Log;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.reactivex.Completable;
-import ru.livetex.sdk.Const;
 import ru.livetex.sdk.LiveTex;
 
 public class App extends Application {

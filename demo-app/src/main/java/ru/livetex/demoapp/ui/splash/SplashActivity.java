@@ -9,7 +9,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import ru.livetex.demoapp.App;
 import ru.livetex.demoapp.R;
-import ru.livetex.sdk.ui.chat.ChatActivity;
+import ru.livetex.sdkui.chat.ChatActivity;
 
 public class SplashActivity extends AppCompatActivity {
 

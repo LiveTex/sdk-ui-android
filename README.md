@@ -46,7 +46,7 @@ dependencies {
 
 ```java
 <activity
-	android:name="ru.livetex.sdk.ui.chat.ChatActivity"
+	android:name="ru.livetex.sdkui.chat.ChatActivity"
 	android:theme="@style/Theme.Chat"
 	android:screenOrientation="portrait" />
 ```
