@@ -401,6 +401,8 @@ public class ChatActivity extends AppCompatActivity {
 				} else {
 					requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_CODE_STORAGE);
 				}
+			} else {
+				showAddFileDialog();
 			}
 		});
 
