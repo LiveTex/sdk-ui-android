@@ -4,7 +4,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -26,11 +28,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.google.android.material.button.MaterialButton;
-import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.yalantis.ucrop.UCrop;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -69,9 +72,9 @@ import ru.livetex.sdkui.utils.TextWatcherAdapter;
 
 public class ChatActivity extends AppCompatActivity {
 	private static final String TAG = "MainActivity";
+	private static final int REQUEST_CODE_STORAGE = 2000;
 
 	private final CompositeDisposable disposables = new CompositeDisposable();
-	private final RxPermissions rxPermissions = new RxPermissions(this);
 	private ChatViewModel viewModel;
 	private final MessagesAdapter adapter = new MessagesAdapter(button -> viewModel.onMessageActionButtonClicked(this, button));
 	private AddFileDialog addFileDialog = null;
@@ -232,6 +235,18 @@ public class ChatActivity extends AppCompatActivity {
 		}
 	}
 
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		switch (requestCode) {
+			case REQUEST_CODE_STORAGE:
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					showAddFileDialog();
+				}
+				break;
+		}
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+	}
+
 	private void subscribeViewModel() {
 		viewModel.viewStateLiveData.observe(this, this::setViewState);
 		viewModel.errorLiveData.observe(this, this::onError);
@@ -281,7 +296,7 @@ public class ChatActivity extends AppCompatActivity {
 				String firstMessageId = null;
 				for (AdapterItem adapterItem : adapter.getData()) {
 					if (adapterItem.getAdapterItemType() == ItemType.CHAT_MESSAGE) {
-						firstMessageId = ((ChatItem)adapterItem).getId();
+						firstMessageId = ((ChatItem) adapterItem).getId();
 						break;
 					}
 				}
@@ -379,17 +394,16 @@ public class ChatActivity extends AppCompatActivity {
 				return;
 			}
 			InputUtils.hideKeyboard(this);
-			disposables.add(rxPermissions
-					.request(Manifest.permission.READ_EXTERNAL_STORAGE)
-					.subscribe(granted -> {
-						if (granted) {
-							addFileDialog = new AddFileDialog(this);
-							addFileDialog.show();
-							addFileDialog.attach(this);
-						} else {
-							// Oops permission denied
-						}
-					}));
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+					showAddFileDialog();
+				} else {
+					requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_CODE_STORAGE);
+				}
+			} else {
+				showAddFileDialog();
+			}
 		});
 
 		Disposable disposable = textSubject
@@ -430,6 +444,12 @@ public class ChatActivity extends AppCompatActivity {
 			InputUtils.hideKeyboard(this);
 			viewModel.sendAttributes(name, phone, email);
 		});
+	}
+
+	private void showAddFileDialog() {
+		addFileDialog = new AddFileDialog(this);
+		addFileDialog.show();
+		addFileDialog.attach(this);
 	}
 
 	private void setViewState(ChatViewState viewState) {
