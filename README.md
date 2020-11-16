@@ -85,7 +85,7 @@ startActivity(new Intent(this, ChatActivity.class));
 С помощью функции `FirebaseInstanceId.getInstance().getInstanceId()` нужно зарегистрировать устройство в Firebase и получить в ответ device token, который в свою очередь нужно передать в билдер LiveTex. Это несинхронная операция которая требует какое-то время, поэтому функция реактивная.
 
 **Внимание** - функция `initLiveTex()` должна быть вызвана до использования класса LiveTex. Поэтому инициализировать его в случае с Firebase стоит заранее (в [SplashActivity](/demo-app/src/main/java/ru/livetex/demoapp/ui/splash/SplashActivity.java) например).
-Иначе при первой инициализации может быть передан пустой пуш токен, если не критично то можете игнорировать.
+Если не критично, можете инициализировать синглтон LiveTex с пустым пуш токеном, обычно к следующей инициализации токен уже лежит в FirebaseInstanceId.getInstance().getToken().
 
 ```java
 public Completable init() {
