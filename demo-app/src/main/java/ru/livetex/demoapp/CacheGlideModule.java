@@ -1,4 +1,4 @@
-package ru.livetex.sdkui;
+package ru.livetex.demoapp;
 
 import android.content.Context;
 import android.util.Log;
