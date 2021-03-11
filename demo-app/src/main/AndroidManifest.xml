@@ -27,6 +27,11 @@
 			android:theme="@style/Theme.Chat"
 			android:screenOrientation="portrait" />
 
+		<activity
+			android:name="ru.livetex.sdkui.chat.image.ImageActivity"
+			android:title="@string/photo"
+			android:theme="@style/AppTheme" />
+
 		<service
 			android:name=".push.FbMessagingService"
 			android:exported="false">

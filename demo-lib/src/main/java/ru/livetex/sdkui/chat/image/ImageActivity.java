@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.appbar.MaterialToolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import ru.livetex.sdkui.R;
@@ -20,6 +21,14 @@ public class ImageActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.a_image);
+
+		MaterialToolbar toolbar = findViewById(R.id.toolbar);
+
+		setSupportActionBar(toolbar);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+		toolbar.setNavigationOnClickListener(view -> finish());
 
 		imageView = findViewById(R.id.imageView);
 

@@ -14,7 +14,10 @@
 			android:exported="true"
 			android:screenOrientation="portrait"/>
 
-		<activity android:name=".chat.image.ImageActivity" />
+		<activity
+			android:name=".chat.image.ImageActivity"
+			android:theme="@style/AppTheme"
+			/>
 
 		<!-- 3rd party -->
 		<activity
