@@ -38,7 +38,7 @@ import ru.livetex.sdkui.R;
 import ru.livetex.sdkui.chat.db.ChatState;
 import ru.livetex.sdkui.utils.DateUtils;
 
-public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.BaseMessageHolder> {
 	private static final String TAG = "MessagesAdapter";
 	private static final int VIEW_TYPE_MESSAGE_INCOMING = 1;
 	private static final int VIEW_TYPE_MESSAGE_OUTGOING = 2;
@@ -50,7 +50,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 	private static final int VIEW_TYPE_DATE = 8;
 	private static final int VIEW_TYPE_EMPLOYEE_TYPING = 9;
 
-	private List<AdapterItem> items = new ArrayList<>();
+	private final List<AdapterItem> items = new ArrayList<>();
 	private int messagesCount = 0;
 	@Nullable
 	private Consumer<ChatItem> onMessageClickListener = null;
@@ -59,13 +59,13 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 	@NonNull
 	private final Consumer<KeyboardEntity.Button> onActionButtonClickListener;
 
-	public MessagesAdapter(Consumer<KeyboardEntity.Button> listener) {
+	public MessagesAdapter(@NonNull Consumer<KeyboardEntity.Button> listener) {
 		this.onActionButtonClickListener = listener;
 	}
 
 	@NonNull
 	@Override
-	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+	public BaseMessageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		View view;
 
 		switch (viewType) {
@@ -110,7 +110,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 	}
 
 	@Override
-	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+	public void onBindViewHolder(@NonNull BaseMessageHolder holder, int position) {
 		final AdapterItem message = items.get(position);
 
 		switch (holder.getItemViewType()) {
@@ -143,13 +143,16 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 				break;
 		}
 
-		if (onMessageClickListener != null && message.getAdapterItemType() == ItemType.CHAT_MESSAGE) {
-			holder.itemView.setOnClickListener(view -> {
+		if (onMessageClickListener != null &&
+				message.getAdapterItemType() == ItemType.CHAT_MESSAGE &&
+				holder.getClickableAreaView() != null) {
+			holder.getClickableAreaView().setOnLongClickListener(view -> {
 				try {
 					onMessageClickListener.accept((ChatItem) message);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				return true;
 			});
 		}
 	}
@@ -235,7 +238,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 		this.onFileClickListener = onFileClickListener;
 	}
 
-	private static class IncomingMessageHolder extends RecyclerView.ViewHolder {
+	private static class IncomingMessageHolder extends BaseMessageHolder {
 		TextView messageView;
 		ImageView avatarView;
 		TextView nameView;
@@ -243,6 +246,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 		TextView quoteView;
 		View quoteSeparatorView;
 		ViewGroup buttonsContainerView;
+		ViewGroup messageContainerView;
 
 		IncomingMessageHolder(View itemView) {
 			super(itemView);
@@ -254,6 +258,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 			quoteView = itemView.findViewById(R.id.quoteView);
 			quoteSeparatorView = itemView.findViewById(R.id.quoteSeparatorView);
 			buttonsContainerView = itemView.findViewById(R.id.buttonsContainerView);
+			messageContainerView = itemView.findViewById(R.id.messageContainerView);
 		}
 
 		void bind(ChatItem message, Consumer<KeyboardEntity.Button> onActionButtonClickListener) {
@@ -293,9 +298,15 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 				}
 			}
 		}
+
+		@Nullable
+		@Override
+		View getClickableAreaView() {
+			return messageContainerView;
+		}
 	}
 
-	private static class IncomingTypingMessageHolder extends RecyclerView.ViewHolder {
+	private static class IncomingTypingMessageHolder extends BaseMessageHolder {
 		TextView messageView;
 		ImageView avatarView;
 		TextView nameView;
@@ -319,7 +330,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
 			timeView.setVisibility(View.GONE);
 
-			typingAnimation(messageView, "Печатает.....", "Печатает".length(), "Печатает".length());
+			typingAnimation(messageView, ".....", ".....".length(), ".....".length());
 		}
 
 		private void typingAnimation(TextView view, String text, int initialLength, int length) {
@@ -340,11 +351,12 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 		}
 	}
 
-	private static class OutgoingMessageHolder extends RecyclerView.ViewHolder {
+	private static class OutgoingMessageHolder extends BaseMessageHolder {
 		TextView messageView;
 		TextView timeView;
 		TextView quoteView;
 		View quoteSeparatorView;
+		ViewGroup messageContainerView;
 
 		OutgoingMessageHolder(View itemView) {
 			super(itemView);
@@ -353,6 +365,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 			timeView = itemView.findViewById(R.id.timeView);
 			quoteView = itemView.findViewById(R.id.quoteView);
 			quoteSeparatorView = itemView.findViewById(R.id.quoteSeparatorView);
+			messageContainerView = itemView.findViewById(R.id.messageContainerView);
 		}
 
 		void bind(ChatItem message) {
@@ -362,13 +375,20 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
 			setState(timeView, message);
 		}
+
+		@Nullable
+		@Override
+		View getClickableAreaView() {
+			return messageContainerView;
+		}
 	}
 
-	private static class IncomingFileHolder extends RecyclerView.ViewHolder {
+	private static class IncomingFileHolder extends BaseMessageHolder {
 		TextView messageView;
 		ImageView avatarView;
 		TextView nameView;
 		TextView timeView;
+		ViewGroup messageContainerView;
 
 		IncomingFileHolder(View itemView) {
 			super(itemView);
@@ -377,6 +397,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 			messageView = itemView.findViewById(R.id.messageView);
 			avatarView = itemView.findViewById(R.id.avatarView);
 			timeView = itemView.findViewById(R.id.timeView);
+			messageContainerView = itemView.findViewById(R.id.messageContainerView);
 		}
 
 		void bind(ChatItem message, Consumer<String> onFileClickListener) {
@@ -399,17 +420,25 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 				});
 			}
 		}
+
+		@Nullable
+		@Override
+		View getClickableAreaView() {
+			return messageContainerView;
+		}
 	}
 
-	private static class OutgoingFileHolder extends RecyclerView.ViewHolder {
+	private static class OutgoingFileHolder extends BaseMessageHolder {
 		TextView messageView;
 		TextView timeView;
+		ViewGroup messageContainerView;
 
 		OutgoingFileHolder(View itemView) {
 			super(itemView);
 
 			messageView = itemView.findViewById(R.id.messageView);
 			timeView = itemView.findViewById(R.id.timeView);
+			messageContainerView = itemView.findViewById(R.id.messageContainerView);
 		}
 
 		void bind(ChatItem message, Consumer<String> onFileClickListener) {
@@ -430,9 +459,15 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 				});
 			}
 		}
+
+		@Nullable
+		@Override
+		View getClickableAreaView() {
+			return messageContainerView;
+		}
 	}
 
-	private static class SystemMessageHolder extends RecyclerView.ViewHolder {
+	private static class SystemMessageHolder extends BaseMessageHolder {
 		TextView messageView;
 
 		SystemMessageHolder(View itemView) {
@@ -446,7 +481,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 		}
 	}
 
-	private static class DateHolder extends RecyclerView.ViewHolder {
+	private static class DateHolder extends BaseMessageHolder {
 		TextView messageView;
 
 		DateHolder(View itemView) {
@@ -460,8 +495,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 		}
 	}
 
-
-	private static class IncomingImageHolder extends RecyclerView.ViewHolder {
+	private static class IncomingImageHolder extends BaseMessageHolder {
 		ImageView imageView;
 		ImageView avatarView;
 		TextView nameView;
@@ -493,9 +527,15 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 				});
 			}
 		}
+
+		@Nullable
+		@Override
+		View getClickableAreaView() {
+			return imageView;
+		}
 	}
 
-	private static class OutgoingImageHolder extends RecyclerView.ViewHolder {
+	private static class OutgoingImageHolder extends BaseMessageHolder {
 		ImageView imageView;
 		TextView timeView;
 
@@ -520,6 +560,27 @@ public final class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 					}
 				});
 			}
+		}
+
+		@Nullable
+		@Override
+		View getClickableAreaView() {
+			return imageView;
+		}
+	}
+
+	protected static abstract class BaseMessageHolder extends RecyclerView.ViewHolder {
+
+		public BaseMessageHolder(@NonNull View itemView) {
+			super(itemView);
+		}
+
+		/**
+		 * Used for click listener if not null
+		 */
+		@Nullable
+		View getClickableAreaView() {
+			return null;
 		}
 	}
 

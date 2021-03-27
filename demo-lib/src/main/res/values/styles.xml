@@ -8,6 +8,8 @@
 	</style>
 
 	<style name="ToolBarStyle" parent="Widget.MaterialComponents.Toolbar">
+		<item name="android:background">?colorPrimaryDark</item>
+		<item name="navigationIconTint">@android:color/white</item>
 		<item name="titleTextColor">@android:color/white</item>
 		<item name="subtitleTextColor">@android:color/white</item>
 	</style>

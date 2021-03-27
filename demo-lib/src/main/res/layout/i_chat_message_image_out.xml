@@ -15,6 +15,9 @@
 		android:adjustViewBounds="true"
 		android:maxWidth="200dp"
 		android:maxHeight="200dp"
+		android:clickable="true"
+		android:focusable="true"
+		android:foreground="?selectableItemBackground"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintTop_toTopOf="parent"
 		tools:src="@drawable/placeholder" />
