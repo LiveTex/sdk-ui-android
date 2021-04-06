@@ -3,6 +3,8 @@ package ru.livetex.demoapp;
 import android.app.Application;
 import android.util.Log;
 
+import java.util.Objects;
+
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.reactivex.Completable;
@@ -49,6 +51,9 @@ public class App extends Application {
 	}
 
 	private void initLiveTex() {
+		if (Objects.equals(Const.TOUCHPOINT, "YOUR_TOUCH_POINT")) {
+			throw new IllegalArgumentException("Please set Const.TOUCHPOINT to your Livetex touchpoint");
+		}
 		new LiveTex.Builder(Const.TOUCHPOINT)
 				.setDeviceToken(FirebaseInstanceId.getInstance().getToken())
 				.build();
