@@ -25,37 +25,9 @@ public final class FileUtils {
 
 		// Get the file extension
 		final MimeTypeMap mime = MimeTypeMap.getSingleton();
-		String subStringExtension = String.valueOf(returnedPath).substring(String.valueOf(returnedPath).lastIndexOf(".") + 1);
-		String extensionFromMime = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
 
-		// Path is null
-		if (returnedPath == null || returnedPath.equals("")) {
-			// This can be caused by two situations
-			// 1. The file was selected from a third party app and the data column returned null (for example EZ File Explorer)
-			// Some file providers (like EZ File Explorer) will return a URI as shown below:
-			// content://es.fileexplorer.filebrowser.ezfilemanager.externalstorage.documents/document/primary%3AFolderName%2FNameOfFile.mp4
-			// When you try to read the _data column, it will return null, without trowing an exception
-			// In this case the file need to copied/created a new file in the temporary folder
-			// 2. There was an error
-			// In this case call PickiTonCompleteListener and get/provide the reason why it failed
-
-			if (uri.getScheme() != null && uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-				return copyFile(uri, context);
-			}
-		}
-		// Path is not null
-		else {
-			// This can be caused by two situations
-			// 1. The file was selected from an unknown provider (for example a file that was downloaded from a third party app)
-			// 2. getExtensionFromMimeType returned an unknown mime type for example "audio/mp4"
-			//
-			// When this is case we will copy/write the file to the temp folder, same as when a file is selected from Google Drive etc.
-			// We provide a name by getting the text after the last "/"
-			// Remember if the extension can't be found, it will not be added, but you will still be able to use the file
-
-			if (!subStringExtension.equals(extensionFromMime) && uri.getScheme() != null && uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-				return copyFile(uri, context);
-			}
+		if (uri.getScheme() != null && uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+			return copyFile(uri, context);
 		}
 		return returnedPath;
 	}
