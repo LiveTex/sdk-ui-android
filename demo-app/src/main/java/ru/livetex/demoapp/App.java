@@ -56,6 +56,8 @@ public class App extends Application {
 		}
 		new LiveTex.Builder(Const.TOUCHPOINT)
 				.setDeviceToken(FirebaseInstanceId.getInstance().getToken())
+				//.setWebsocketLoggingEnabled()
+				//.setNetworkLoggingEnabled()
 				.build();
 	}
 }

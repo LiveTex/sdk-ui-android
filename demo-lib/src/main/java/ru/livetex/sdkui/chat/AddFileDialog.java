@@ -70,7 +70,10 @@ public final class AddFileDialog extends Dialog {
 
 			File destination = new File(getAppCacheFolder(getContext()), System.currentTimeMillis() + ".jpg");
 
-			sourceFileUri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".provider", destination);
+			// Non-default authority name because it's a library
+			String authority = getContext().getPackageName() + ".livetex.provider";
+
+			sourceFileUri = FileProvider.getUriForFile(getContext(), authority, destination);
 
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, sourceFileUri);
 			activity.startActivityForResult(intent, RequestCodes.CAMERA);
