@@ -25,8 +25,8 @@
 			android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
 
 		<provider
-			android:name="androidx.core.content.FileProvider"
-			android:authorities="${applicationId}.provider"
+			android:name="ru.livetex.sdkui.LivetexFileProvider"
+			android:authorities="${applicationId}.livetex.provider"
 			android:exported="false"
 			android:grantUriPermissions="true">
 			<meta-data
