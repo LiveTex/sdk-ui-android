@@ -90,27 +90,41 @@ startActivity(new Intent(this, ChatActivity.class));
 ```java
 public Completable init() {
 	return Completable.create(emitter -> {
-		FirebaseInstanceId.getInstance().getInstanceId()
-				.addOnCompleteListener(task -> {
-					if (!task.isSuccessful()) {
-						Log.w(TAG, "getInstanceId failed", task.getException());
-						initLiveTex();
-						emitter.onComplete();
-						return;
-					}
+		FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+			if (!task.isSuccessful()) {
+				Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+				initLiveTex(null);
+				emitter.onComplete();
+				return;
+			}
 
-					String token = task.getResult().getToken();
-					Log.i(TAG, "firebase token = " + token);
+			// Get new FCM registration token
+			String token = task.getResult();
+			Log.i(TAG, "firebase token = " + token);
 
-					initLiveTex();
-					emitter.onComplete();
-				});
+			initLiveTex(token);
+			emitter.onComplete();
+		});
 	});
 }
 
-private void initLiveTex() {
+private void initLiveTex(@Nullable String token) {
 	new LiveTex.Builder(Const.TOUCHPOINT)
-			.setDeviceToken(FirebaseInstanceId.getInstance().getToken())
+			.setDeviceToken(token)
+			.build();
+}
+```
+
+**Отладка**
+
+Для отладки можно включить логи https и websocket общения, для этого при инициализации LiveTex вызвать 2 дополнительные функции
+
+```java
+private void initLiveTex(@Nullable String token) {
+	new LiveTex.Builder(Const.TOUCHPOINT)
+			.setDeviceToken(token)
+			.setWebsocketLoggingEnabled()
+            .setNetworkLoggingEnabled()
 			.build();
 }
 ```
