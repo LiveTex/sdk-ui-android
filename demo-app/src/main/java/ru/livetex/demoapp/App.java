@@ -5,8 +5,9 @@ import android.util.Log;
 
 import java.util.Objects;
 
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 
+import androidx.annotation.Nullable;
 import io.reactivex.Completable;
 import ru.livetex.sdk.LiveTex;
 
@@ -32,30 +33,32 @@ public class App extends Application {
 
 	public Completable init() {
 		return Completable.create(emitter -> {
-			FirebaseInstanceId.getInstance().getInstanceId()
-					.addOnCompleteListener(task -> {
-						if (!task.isSuccessful()) {
-							Log.w(TAG, "getInstanceId failed", task.getException());
-							initLiveTex();
-							emitter.onComplete();
-							return;
-						}
+			FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+				if (!task.isSuccessful()) {
+					Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+					initLiveTex(null);
+					emitter.onComplete();
+					return;
+				}
 
-						String token = task.getResult().getToken();
-						Log.i(TAG, "firebase token = " + token);
+				// Get new FCM registration token
+				String token = task.getResult();
+				Log.i(TAG, "firebase token = " + token);
 
-						initLiveTex();
-						emitter.onComplete();
-					});
+				initLiveTex(token);
+				emitter.onComplete();
+			});
 		});
 	}
 
-	private void initLiveTex() {
+	private void initLiveTex(@Nullable String pushToken) {
 		if (Objects.equals(Const.TOUCHPOINT, "YOUR_TOUCH_POINT")) {
 			throw new IllegalArgumentException("Please set Const.TOUCHPOINT to your Livetex touchpoint");
 		}
 		new LiveTex.Builder(Const.TOUCHPOINT)
-				.setDeviceToken(FirebaseInstanceId.getInstance().getToken())
+				.setDeviceToken(pushToken)
+//				.setWebsocketLoggingEnabled()
+//				.setNetworkLoggingEnabled()
 				.build();
 	}
 }
