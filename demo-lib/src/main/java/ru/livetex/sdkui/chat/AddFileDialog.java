@@ -1,11 +1,14 @@
 package ru.livetex.sdkui.chat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,6 +31,7 @@ public final class AddFileDialog extends Dialog {
 		int CAMERA = 1000;
 		int SELECT_IMAGE_OR_VIDEO = 1001;
 		int SELECT_FILE = 1002;
+		int CAMERA_PERMISSION = 1002;
 	}
 
 	private View cameraView;
@@ -64,19 +68,14 @@ public final class AddFileDialog extends Dialog {
 
 	public void attach(Activity activity) {
 		cameraView.setOnClickListener(v -> {
-			Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-			intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-			intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
-			File destination = new File(getAppCacheFolder(getContext()), System.currentTimeMillis() + ".jpg");
-
-			// Non-default authority name because it's a library
-			String authority = getContext().getPackageName() + ".livetex.provider";
-
-			sourceFileUri = FileProvider.getUriForFile(getContext(), authority, destination);
-
-			intent.putExtra(MediaStore.EXTRA_OUTPUT, sourceFileUri);
-			activity.startActivityForResult(intent, RequestCodes.CAMERA);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				if (activity.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+					activity.requestPermissions(new String[]{Manifest.permission.CAMERA},
+							RequestCodes.CAMERA_PERMISSION);
+					return;
+				}
+			}
+			requestCamera(activity);
 		});
 
 		galleryView.setOnClickListener(v -> {
@@ -96,6 +95,10 @@ public final class AddFileDialog extends Dialog {
 					Intent.createChooser(intent, "Выберите файл"),
 					RequestCodes.SELECT_FILE);
 		});
+	}
+
+	public void onCameraPermissionGranted(Activity activity) {
+		requestCamera(activity);
 	}
 
 	public void crop(Activity activity, Uri imageUri) {
@@ -134,6 +137,22 @@ public final class AddFileDialog extends Dialog {
 		}
 
 		dismiss();
+	}
+
+	private void requestCamera(Activity activity) {
+		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+		intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+		File destination = new File(getAppCacheFolder(getContext()), System.currentTimeMillis() + ".jpg");
+
+		// Non-default authority name because it's a library
+		String authority = getContext().getPackageName() + ".livetex.provider";
+
+		sourceFileUri = FileProvider.getUriForFile(getContext(), authority, destination);
+
+		intent.putExtra(MediaStore.EXTRA_OUTPUT, sourceFileUri);
+		activity.startActivityForResult(intent, RequestCodes.CAMERA);
 	}
 
 	private String getAppCacheFolder(Context context) {
