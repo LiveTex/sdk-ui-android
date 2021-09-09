@@ -477,7 +477,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 		}
 
 		void bind(ChatItem message) {
-			messageView.setText(message.content);
+			ru.livetex.sdkui.utils.TextUtils.setTextWithLinks(message.content, messageView);
 		}
 	}
 

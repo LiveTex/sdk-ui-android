@@ -1,6 +1,8 @@
 package ru.livetex.sdkui.utils;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
+import android.text.Html;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -11,15 +13,46 @@ import android.text.util.Linkify;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import androidx.annotation.Nullable;
 
 public final class TextUtils {
+	private static final String HTML_PATTERN = "<(\"[^\"]*\"|'[^']*'|[^'\">])*>";
+	private static final Pattern pattern = Pattern.compile(HTML_PATTERN);
+
+	public static boolean containsHtml(String text) {
+		Matcher matcher = pattern.matcher(text);
+		return matcher.find();
+	}
 
 	@SuppressLint("ClickableViewAccessibility")
 	public static Spannable setTextWithLinks(String source, TextView textView) {
-		Spanned text = new SpannableString(source);
+		boolean hasHtml = containsHtml(source);
+		Spanned text;
+
+		if (hasHtml) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+				text = Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY);
+			} else {
+				text = Html.fromHtml(source);
+			}
+		} else {
+			text = new SpannableString(source);
+		}
+
+		URLSpan[] currentSpans = hasHtml ? text.getSpans(0, text.length(), URLSpan.class) : new URLSpan[0];
+
 		SpannableString buffer = new SpannableString(text);
 		Linkify.addLinks(buffer, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
+
+		for (Object span : currentSpans) {
+			int start = text.getSpanStart(span);
+			int end = text.getSpanEnd(span);
+			buffer.setSpan(span, start, end, 0);
+		}
+
 		// Fix click area (https://stackoverflow.com/a/17246463/2190250)
 		textView.setOnTouchListener((v, event) -> {
 			boolean ret = false;
@@ -41,7 +74,7 @@ public final class TextUtils {
 				int line = layout.getLineForVertical(y);
 				int off = layout.getOffsetForHorizontal(line, x);
 
-				ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
+				URLSpan[] link = buffer.getSpans(off, off, URLSpan.class);
 
 				if (link.length != 0) {
 					if (action == MotionEvent.ACTION_UP) {
@@ -52,7 +85,9 @@ public final class TextUtils {
 			}
 			return ret;
 		});
+
 		textView.setText(buffer);
+
 		return buffer;
 	}
 
