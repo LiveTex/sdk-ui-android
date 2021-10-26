@@ -8,12 +8,12 @@
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"
 		android:roundIcon="@mipmap/ic_launcher_round"
-		android:supportsRtl="true"
 		android:theme="@style/Theme.Livetex">
 		<activity
 			android:name=".ui.splash.SplashActivity"
-			android:theme="@style/Theme.Chat"
-			android:screenOrientation="portrait">
+			android:exported="true"
+			android:screenOrientation="portrait"
+			android:theme="@style/Theme.Chat">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 
@@ -23,13 +23,14 @@
 
 		<activity
 			android:name="ru.livetex.sdkui.chat.ChatActivity"
-			android:theme="@style/Theme.Chat"
-			android:screenOrientation="portrait" />
+			android:exported="true"
+			android:screenOrientation="portrait"
+			android:theme="@style/Theme.Chat" />
 
 		<activity
 			android:name="ru.livetex.sdkui.chat.image.ImageActivity"
-			android:title="@string/photo"
-			android:theme="@style/AppTheme" />
+			android:theme="@style/AppTheme"
+			android:title="@string/photo" />
 
 		<service
 			android:name=".push.FbMessagingService"
@@ -57,5 +58,4 @@
 			android:value="@string/notifications_channel_name" />
 
 	</application>
-
 </manifest>

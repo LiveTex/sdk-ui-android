@@ -42,6 +42,7 @@
 				android:resource="@xml/provider_paths" />
 		</provider>
 	</application>
+
 	<queries>
 		<!-- Camera and Gallery -->
 		<intent>
