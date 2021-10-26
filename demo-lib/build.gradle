@@ -1,17 +1,14 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'maven-publish' // for Jitpack
 
-group='com.github.LiveTex'
+group='com.github.LiveTex' // for Jitpack
 
 android {
-	compileSdkVersion 29
-	buildToolsVersion "29.0.3"
+	compileSdkVersion 30
 
 	defaultConfig {
 		minSdkVersion 21
-		targetSdkVersion 29
-		versionCode 1
-		versionName "1.0"
+		targetSdkVersion 30
 		consumerProguardFiles = ['proguard-rules.pro']
 	}
 
