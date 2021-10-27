@@ -124,7 +124,7 @@ private void initLiveTex(@Nullable String token) {
 	new LiveTex.Builder(Const.TOUCHPOINT)
 			.setDeviceToken(token)
 			.setWebsocketLoggingEnabled()
-            .setNetworkLoggingEnabled()
+			.setNetworkLoggingEnabled()
 			.build();
 }
 ```

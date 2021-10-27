@@ -10,5 +10,22 @@ enum ChatViewState {
 	// Only Attributes form is visible
 	ATTRIBUTES,
 	// Only Departments selection is visible
-	DEPARTMENTS
+	DEPARTMENTS;
+}
+
+enum ChatInputState {
+	// All input controls are visible and enabled
+	NORMAL,
+	DISABLED,
+	HIDDEN
+}
+
+final class ChatViewStateData {
+	ChatViewState state;
+	ChatInputState inputState;
+
+	ChatViewStateData(ChatViewState state, ChatInputState inputState) {
+		this.state = state;
+		this.inputState = inputState;
+	}
 }

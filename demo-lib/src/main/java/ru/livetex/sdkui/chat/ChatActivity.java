@@ -159,10 +159,8 @@ public class ChatActivity extends AppCompatActivity {
 		super.onDestroy();
 		disposables.clear();
 		NetworkManager.getInstance().stopObserveNetworkState(this);
-		if (addFileDialog != null && addFileDialog.isShowing()) {
-			addFileDialog.close();
-			addFileDialog = null;
-		}
+		closeFileDialog();
+		addFileDialog = null;
 		getLifecycle().removeObserver(lifecycleObserver);
 	}
 
@@ -172,14 +170,14 @@ public class ChatActivity extends AppCompatActivity {
 
 		switch (requestCode) {
 			case AddFileDialog.RequestCodes.CAMERA: {
-				addFileDialog.close();
+				closeFileDialog();
 				if (resultCode == Activity.RESULT_OK) {
 					addFileDialog.crop(this, addFileDialog.getSourceFileUri());
 				}
 				break;
 			}
 			case AddFileDialog.RequestCodes.SELECT_IMAGE_OR_VIDEO: {
-				addFileDialog.close();
+				closeFileDialog();
 				if (resultCode == Activity.RESULT_OK && data != null) {
 					Uri uri = data.getData();
 					if (uri == null) {
@@ -202,7 +200,7 @@ public class ChatActivity extends AppCompatActivity {
 				break;
 			}
 			case AddFileDialog.RequestCodes.SELECT_FILE: {
-				addFileDialog.close();
+				closeFileDialog();
 				if (resultCode == Activity.RESULT_OK && data != null) {
 					Uri uri = data.getData();
 					if (uri == null) {
@@ -252,6 +250,14 @@ public class ChatActivity extends AppCompatActivity {
 				break;
 		}
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+	}
+
+	void resendMessage(ChatMessage message) {
+		if (!canSendMessage()) {
+			Toast.makeText(this, "Отправка сейчас недоступна", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		viewModel.resendMessage(message);
 	}
 
 	private void subscribeViewModel() {
@@ -372,7 +378,7 @@ public class ChatActivity extends AppCompatActivity {
 	private void setupInput() {
 		// --- Chat input
 		sendView.setOnClickListener(v -> {
-			if (!viewModel.inputEnabled) {
+			if (!canSendMessage()) {
 				Toast.makeText(this, "Отправка сейчас недоступна", Toast.LENGTH_SHORT).show();
 				return;
 			}
@@ -389,6 +395,10 @@ public class ChatActivity extends AppCompatActivity {
 
 		inputView.setOnEditorActionListener((v, actionId, event) -> {
 			if (actionId == EditorInfo.IME_ACTION_SEND) {
+				if (!canSendMessage()) {
+					Toast.makeText(this, "Отправка сейчас недоступна", Toast.LENGTH_SHORT).show();
+					return true;
+				}
 				sendMessage();
 				return true;
 			}
@@ -396,10 +406,6 @@ public class ChatActivity extends AppCompatActivity {
 		});
 
 		addView.setOnClickListener(v -> {
-			if (!viewModel.inputEnabled) {
-				Toast.makeText(this, "Отправка файлов сейчас недоступна", Toast.LENGTH_SHORT).show();
-				return;
-			}
 			InputUtils.hideKeyboard(this);
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -430,8 +436,7 @@ public class ChatActivity extends AppCompatActivity {
 		});
 
 		filePreviewDeleteView.setOnClickListener(v -> {
-			viewModel.selectedFile = null;
-			viewModel.viewStateLiveData.setValue(ChatViewState.NORMAL);
+			viewModel.onFileSelected(null);
 		});
 
 		// --- Attributes
@@ -459,23 +464,28 @@ public class ChatActivity extends AppCompatActivity {
 		addFileDialog.attach(this);
 	}
 
-	private void setViewState(ChatViewState viewState) {
-		if (viewState == null) {
+	private void setViewState(ChatViewStateData data) {
+		if (data == null) {
 			return;
 		}
 
 		// Set default state at first
-		inputFieldContainerView.setBackgroundResource(viewModel.inputEnabled ? 0 : R.drawable.bg_input_field_container_disabled);
-		inputView.setEnabled(viewModel.inputEnabled);
-		addView.setEnabled(viewModel.inputEnabled);
-		sendView.setEnabled(viewModel.inputEnabled);
+		if (data.inputState == ChatInputState.HIDDEN) {
+			inputContainerView.setVisibility(View.GONE);
+		} else {
+			inputContainerView.setVisibility(View.VISIBLE);
+		}
+		sendView.setEnabled(data.inputState != ChatInputState.DISABLED);
+
+		inputFieldContainerView.setBackgroundResource(0);
+
 		quoteContainerView.setVisibility(View.GONE);
 		filePreviewView.setVisibility(View.GONE);
 		filePreviewDeleteView.setVisibility(View.GONE);
 		fileNameView.setVisibility(View.GONE);
 
 		// Apply specific state
-		switch (viewState) {
+		switch (data.state) {
 			case NORMAL:
 				inputContainerView.setVisibility(View.VISIBLE);
 				attributesContainerView.setVisibility(View.GONE);
@@ -483,9 +493,10 @@ public class ChatActivity extends AppCompatActivity {
 
 				break;
 			case SEND_FILE_PREVIEW:
-				// gray background
+				// force disable of text input. Currently we can't send image and text together.
 				inputFieldContainerView.setBackgroundResource(R.drawable.bg_input_field_container_disabled);
 				inputView.setEnabled(false);
+
 				// file preview img
 				filePreviewView.setVisibility(View.VISIBLE);
 				filePreviewDeleteView.setVisibility(View.VISIBLE);
@@ -545,9 +556,7 @@ public class ChatActivity extends AppCompatActivity {
 	}
 
 	private void onFileSelected(Uri file) {
-		viewModel.selectedFile = file;
-		viewModel.setQuoteText(null);
-		viewModel.viewStateLiveData.setValue(ChatViewState.SEND_FILE_PREVIEW);
+		viewModel.onFileSelected(file);
 	}
 
 	private void sendMessage() {
@@ -557,7 +566,8 @@ public class ChatActivity extends AppCompatActivity {
 			Toast.makeText(this, "Введите сообщение", Toast.LENGTH_SHORT).show();
 			return;
 		}
-		if (!viewModel.inputEnabled) {
+		// Duplicated check
+		if (!canSendMessage()) {
 			Toast.makeText(this, "Отправка сообщений сейчас недоступна", Toast.LENGTH_SHORT).show();
 			return;
 		}
@@ -572,12 +582,26 @@ public class ChatActivity extends AppCompatActivity {
 		viewModel.sendMessage(chatMessage);
 	}
 
+	private void closeFileDialog() {
+		if (addFileDialog != null && addFileDialog.isShowing()) {
+			addFileDialog.close();
+		}
+	}
+
 	/**
 	 * Here you can use dialog status and employee data
 	 */
 	private void updateDialogState(DialogState dialogState) {
 		boolean shouldShowFeedback = dialogState.employee != null && dialogState.employee.rating == null;
 		feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
+		// Don't use showInput from DialogState, see ChatViewState
+	}
+
+	/**
+	 * Convenient check of UI state (which in turn is driven by logic or state)
+	 */
+	private boolean canSendMessage() {
+		return sendView.isEnabled() && inputContainerView.getVisibility() == View.VISIBLE;
 	}
 
 	private void onConnectionStateUpdate(NetworkManager.ConnectionState connectionState) {

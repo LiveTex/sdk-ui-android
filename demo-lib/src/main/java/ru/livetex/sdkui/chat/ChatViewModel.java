@@ -53,12 +53,14 @@ public final class ChatViewModel extends ViewModel {
 	final MutableLiveData<NetworkManager.ConnectionState> connectionStateLiveData = new MutableLiveData<>();
 	final MutableLiveData<List<Department>> departmentsLiveData = new MutableLiveData<>();
 	final MutableLiveData<DialogState> dialogStateUpdateLiveData = new MutableLiveData<>();
-	final MutableLiveData<ChatViewState> viewStateLiveData = new MutableLiveData<>(ChatViewState.NORMAL);
+	final MutableLiveData<ChatViewStateData> viewStateLiveData = new MutableLiveData<>(new ChatViewStateData(ChatViewState.NORMAL, ChatInputState.DISABLED));
 	final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
 
 	// File for upload
 	Uri selectedFile = null;
-	boolean inputEnabled = true;
+	// Flag indicating that input can be hidden by business logic
+	boolean isInputShown = true;
+	boolean isConnected = false;
 	private String quoteText = null;
 
 	public ChatViewModel(SharedPreferences sp) {
@@ -79,7 +81,7 @@ public final class ChatViewModel extends ViewModel {
 	private void subscribe() {
 		disposables.add(networkManager.connectionState()
 				.observeOn(Schedulers.io())
-				.subscribe(connectionStateLiveData::postValue, thr -> {
+				.subscribe(this::onConnectionStateUpdate, thr -> {
 					Log.e(TAG, "connectionState", thr);
 				}));
 
@@ -101,7 +103,7 @@ public final class ChatViewModel extends ViewModel {
 					// Это лишь пример реализации того, как собрать и отправить аттрибуты.
 					// Важно только ответить на attributesRequest посылкой обязательных (если есть) аттрибутов.
 					// То есть если не требуется собирать аттрибуты от пользователя, можно просто ответить на запрос с помощью messagesHandler.sendAttributes
-					viewStateLiveData.postValue(ChatViewState.ATTRIBUTES);
+					updateViewState(ChatViewState.ATTRIBUTES);
 
 //					Disposable d = Completable.fromAction(() -> messagesHandler.sendAttributes("Demo user", null, null, null))
 //							.subscribeOn(Schedulers.io())
@@ -115,10 +117,10 @@ public final class ChatViewModel extends ViewModel {
 		disposables.add(messagesHandler.dialogStateUpdate()
 				.observeOn(Schedulers.io())
 				.subscribe(state -> {
-					boolean inputStateChanged = this.inputEnabled != state.isInputEnabled();
+					boolean inputStateChanged = this.isInputShown != state.isInputEnabled();
 					if (inputStateChanged) {
-						this.inputEnabled = state.isInputEnabled();
-						viewStateLiveData.postValue(viewStateLiveData.getValue());
+						this.isInputShown = state.isInputEnabled();
+						updateViewState(viewStateLiveData.getValue().state);
 					}
 					dialogStateUpdateLiveData.postValue(state);
 				}, thr -> {
@@ -151,6 +153,25 @@ public final class ChatViewModel extends ViewModel {
 				}));
 	}
 
+	private void onConnectionStateUpdate(NetworkManager.ConnectionState connectionState) {
+		connectionStateLiveData.postValue(connectionState);
+
+		switch (connectionState) {
+			case CONNECTED:
+				if (!isConnected) {
+					isConnected = true;
+					updateViewState(viewStateLiveData.getValue().state);
+				}
+				break;
+			default:
+				if (isConnected) {
+					isConnected = false;
+					updateViewState(viewStateLiveData.getValue().state);
+				}
+				break;
+		}
+	}
+
 	/**
 	 * Give user ability to choose chat department (room). Select the one if only one in list.
 	 */
@@ -168,7 +189,7 @@ public final class ChatViewModel extends ViewModel {
 		}
 
 		departmentsLiveData.postValue(departments);
-		viewStateLiveData.postValue(ChatViewState.DEPARTMENTS);
+		updateViewState(ChatViewState.DEPARTMENTS);
 	}
 
 	void sendAttributes(String name, String phone, String email) {
@@ -176,7 +197,7 @@ public final class ChatViewModel extends ViewModel {
 				.subscribeOn(Schedulers.io())
 				.observeOn(Schedulers.io())
 				.subscribe(() -> {
-					viewStateLiveData.postValue(ChatViewState.NORMAL);
+					updateViewState(ChatViewState.NORMAL);
 				}, thr -> Log.e(TAG, "sendAttributes", thr));
 		disposables.add(d);
 	}
@@ -228,40 +249,43 @@ public final class ChatViewModel extends ViewModel {
 		if (TextUtils.isEmpty(message)) {
 			return;
 		}
+		if (!isConnected) {
+			return;
+		}
 		messagesHandler.sendTypingEvent(message);
 	}
 
 	void selectDepartment(Department department) {
 		Disposable d = messagesHandler.sendDepartmentSelectionEvent(department.id)
 				.subscribeOn(Schedulers.io())
-				.observeOn(AndroidSchedulers.mainThread())
+				.observeOn(Schedulers.io())
 				.subscribe(response -> {
 					if (response.error != null && response.error.contains(LiveTexError.INVALID_DEPARTMENT)) {
-						errorLiveData.setValue("Была выбрана невалидная комната");
+						errorLiveData.postValue("Была выбрана невалидная комната");
 					} else {
-						viewStateLiveData.setValue(ChatViewState.NORMAL);
+						updateViewState(ChatViewState.NORMAL);
 					}
 				}, thr -> {
-					errorLiveData.setValue(thr.getMessage());
+					errorLiveData.postValue(thr.getMessage());
 					Log.e(TAG, "sendDepartmentSelectionEvent", thr);
 				});
 	}
 
 	@Nullable
-	public String getQuoteText() {
+	String getQuoteText() {
 		return quoteText;
 	}
 
-	public void setQuoteText(@Nullable String quoteText) {
+	void setQuoteText(@Nullable String quoteText) {
 		this.quoteText = quoteText;
 		if (TextUtils.isEmpty(this.quoteText)) {
-			viewStateLiveData.setValue(ChatViewState.NORMAL);
+			updateViewState(ChatViewState.NORMAL);
 		} else {
-			viewStateLiveData.setValue(ChatViewState.QUOTE);
+			updateViewState(ChatViewState.QUOTE);
 		}
 	}
 
-	public void onMessageActionButtonClicked(Context context, KeyboardEntity.Button button) {
+	void onMessageActionButtonClicked(Context context, KeyboardEntity.Button button) {
 		messagesHandler.sendButtonPressedEvent(button.payload);
 
 		if (!TextUtils.isEmpty(button.url)) {
@@ -269,6 +293,53 @@ public final class ChatViewModel extends ViewModel {
 			Disposable d = Completable.timer(300, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
 					.subscribe(() -> IntentUtils.goUrl(context, button.url), thr -> Log.e(TAG, "onMessageActionButtonClicked: go url", thr));
 			disposables.add(d);
+		}
+	}
+
+	boolean canPreloadMessages() {
+		return ChatState.instance.canPreloadChatMessages;
+	}
+
+	void loadPreviousMessages(String messageId, int count) {
+		Disposable d = messagesHandler.getHistory(messageId, count)
+				.subscribeOn(Schedulers.io())
+				.observeOn(Schedulers.io())
+				.subscribe(preloadedCount -> {
+					if (preloadedCount < count) {
+						ChatState.instance.canPreloadChatMessages = false;
+					}
+				}, e -> {
+					Log.e(TAG, "loadPreviousMessages", e);
+				});
+		disposables.add(d);
+	}
+
+	void sendFeedback(boolean isPositive) {
+		Disposable d = Completable.fromAction(() -> messagesHandler.sendRatingEvent(isPositive))
+				.subscribeOn(Schedulers.io())
+				.observeOn(Schedulers.io())
+				.subscribe(Functions.EMPTY_ACTION, e -> {
+					Log.e(TAG, "sendFeedback", e);
+				});
+		disposables.add(d);
+	}
+
+	public void onResume() {
+		connect();
+	}
+
+	public void onPause() {
+		networkManager.forceDisconnect();
+	}
+
+	void onFileSelected(@Nullable Uri file) {
+		selectedFile = file;
+
+		if (file != null) {
+			setQuoteText(null);
+			updateViewState(ChatViewState.SEND_FILE_PREVIEW);
+		} else {
+			updateViewState(ChatViewState.NORMAL);
 		}
 	}
 
@@ -304,7 +375,7 @@ public final class ChatViewModel extends ViewModel {
 
 					// return UI to normal
 					selectedFile = null;
-					viewStateLiveData.postValue(ChatViewState.NORMAL);
+					updateViewState(ChatViewState.NORMAL);
 				})
 				.flatMap(messagesHandler::sendFileMessage)
 				.subscribe(resp -> {
@@ -340,44 +411,20 @@ public final class ChatViewModel extends ViewModel {
 				.subscribe(visitorTokenReceived -> {
 					sp.edit().putString(Const.KEY_VISITOR_TOKEN, visitorTokenReceived).apply();
 				}, e -> {
-					Log.e(TAG, "connect", e);
+					Log.e(TAG, "connect error " + e.getMessage(), e);
 					errorLiveData.postValue("Ошибка соединения " + e.getMessage());
 				}));
 	}
 
-	public boolean canPreloadMessages() {
-		return ChatState.instance.canPreloadChatMessages;
-	}
-
-	public void loadPreviousMessages(String messageId, int count) {
-		Disposable d = messagesHandler.getHistory(messageId, count)
-				.subscribeOn(Schedulers.io())
-				.observeOn(Schedulers.io())
-				.subscribe(preloadedCount -> {
-					if (preloadedCount < count) {
-						ChatState.instance.canPreloadChatMessages = false;
-					}
-				}, e -> {
-					Log.e(TAG, "loadPreviousMessages", e);
-				});
-		disposables.add(d);
-	}
-
-	public void sendFeedback(boolean isPositive) {
-		Disposable d = Completable.fromAction(() -> messagesHandler.sendRatingEvent(isPositive))
-				.subscribeOn(Schedulers.io())
-				.observeOn(Schedulers.io())
-				.subscribe(Functions.EMPTY_ACTION, e -> {
-					Log.e(TAG, "sendFeedback", e);
-				});
-		disposables.add(d);
-	}
-
-	public void onResume() {
-		connect();
-	}
-
-	public void onPause() {
-		networkManager.forceDisconnect();
+	private void updateViewState(ChatViewState viewState) {
+		ChatInputState inputState;
+		if (!isInputShown) {
+			inputState = ChatInputState.HIDDEN;
+		} else if (!isConnected) {
+			inputState = ChatInputState.DISABLED;
+		} else {
+			inputState = ChatInputState.NORMAL;
+		}
+		viewStateLiveData.postValue(new ChatViewStateData(viewState, inputState));
 	}
 }
