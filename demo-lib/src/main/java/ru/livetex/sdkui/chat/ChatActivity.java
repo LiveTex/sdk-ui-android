@@ -487,7 +487,6 @@ public class ChatActivity extends AppCompatActivity {
 		// Apply specific state
 		switch (data.state) {
 			case NORMAL:
-				inputContainerView.setVisibility(View.VISIBLE);
 				attributesContainerView.setVisibility(View.GONE);
 				departmentsContainerView.setVisibility(View.GONE);
 

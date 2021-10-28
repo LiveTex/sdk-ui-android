@@ -9,6 +9,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
@@ -425,6 +426,9 @@ public final class ChatViewModel extends ViewModel {
 		} else {
 			inputState = ChatInputState.NORMAL;
 		}
-		viewStateLiveData.postValue(new ChatViewStateData(viewState, inputState));
+		ChatViewStateData newState = new ChatViewStateData(viewState, inputState);
+		if (!Objects.equals(newState, viewStateLiveData.getValue())) {
+			viewStateLiveData.postValue(newState);
+		}
 	}
 }

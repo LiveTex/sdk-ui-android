@@ -1,5 +1,7 @@
 package ru.livetex.sdkui.chat;
 
+import java.util.Objects;
+
 enum ChatViewState {
 	// Normal UI with visible input
 	NORMAL,
@@ -27,5 +29,22 @@ final class ChatViewStateData {
 	ChatViewStateData(ChatViewState state, ChatInputState inputState) {
 		this.state = state;
 		this.inputState = inputState;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		ChatViewStateData that = (ChatViewStateData) o;
+		return state == that.state && inputState == that.inputState;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(state, inputState);
 	}
 }
