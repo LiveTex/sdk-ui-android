@@ -48,12 +48,12 @@ public final class MessageActionsDialog extends Dialog {
 		resendView.setVisibility(withResend ? View.VISIBLE : View.GONE);
 	}
 
-	public void attach(Activity activity, ChatViewModel viewModel, ChatItem item) {
+	public void attach(ChatActivity activity, ChatViewModel viewModel, ChatItem item) {
 		resendView.setOnClickListener(v -> {
 			if (item.sentState == MessageSentState.FAILED) {
 				ChatMessage message = ChatState.instance.getMessage(item.id);
 				if (message != null) {
-					viewModel.resendMessage(message);
+					activity.resendMessage(message);
 				}
 			}
 			dismiss();
