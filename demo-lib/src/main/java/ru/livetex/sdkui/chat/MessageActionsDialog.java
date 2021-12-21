@@ -48,28 +48,28 @@ public final class MessageActionsDialog extends Dialog {
 		resendView.setVisibility(withResend ? View.VISIBLE : View.GONE);
 	}
 
-	public void attach(ChatActivity activity, ChatViewModel viewModel, ChatItem item) {
+	public void attach(MessageActionsListener listener) {
 		resendView.setOnClickListener(v -> {
-			if (item.sentState == MessageSentState.FAILED) {
-				ChatMessage message = ChatState.instance.getMessage(item.id);
-				if (message != null) {
-					activity.resendMessage(message);
-				}
-			}
+			listener.onResend();
 			dismiss();
 		});
 
 		copyView.setOnClickListener(v -> {
-			ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-			ClipData clip = ClipData.newPlainText("Текст сообщения", item.content);
-			clipboard.setPrimaryClip(clip);
-			Toast.makeText(activity, "Скопировано в буфер обмена", Toast.LENGTH_SHORT).show();
+			listener.onCopy();
 			dismiss();
 		});
 
 		quoteView.setOnClickListener(v -> {
-			viewModel.setQuoteText(item.content);
+			listener.onQuote();
 			dismiss();
 		});
 	}
+}
+
+interface MessageActionsListener {
+	void onResend();
+
+	void onCopy();
+
+	void onQuote();
 }

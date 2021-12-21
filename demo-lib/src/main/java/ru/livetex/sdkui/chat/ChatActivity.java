@@ -2,6 +2,8 @@ package ru.livetex.sdkui.chat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,8 +36,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -106,14 +110,13 @@ public class ChatActivity extends AppCompatActivity {
 	private ImageView quoteCloseView;
 
 	// For disconnecting from websocket on pause and connecting on resume. If you need active websocket while app in background, just use viewModel.onResume()
-	private final LifecycleObserver lifecycleObserver = new LifecycleObserver() {
-		@OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-		public void resumed() {
+	private final LifecycleObserver lifecycleObserver = new DefaultLifecycleObserver()
+	{
+		@Override public void onResume(@NonNull LifecycleOwner owner) {
 			viewModel.onResume();
 		}
 
-		@OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-		public void paused() {
+		@Override public void onPause(@NonNull LifecycleOwner owner) {
 			viewModel.onPause();
 		}
 	};
@@ -158,10 +161,15 @@ public class ChatActivity extends AppCompatActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		disposables.clear();
+
 		NetworkManager.getInstance().stopObserveNetworkState(this);
-		closeFileDialog();
-		addFileDialog = null;
 		getLifecycle().removeObserver(lifecycleObserver);
+
+		closeFileDialog();
+		if (addFileDialog != null) {
+			addFileDialog.cleanup();
+			addFileDialog = null;
+		}
 	}
 
 	@Override
@@ -170,14 +178,14 @@ public class ChatActivity extends AppCompatActivity {
 
 		switch (requestCode) {
 			case AddFileDialog.RequestCodes.CAMERA: {
-				closeFileDialog();
 				if (resultCode == Activity.RESULT_OK) {
 					addFileDialog.crop(this, addFileDialog.getSourceFileUri());
+				} else {
+					closeFileDialog();
 				}
 				break;
 			}
 			case AddFileDialog.RequestCodes.SELECT_IMAGE_OR_VIDEO: {
-				closeFileDialog();
 				if (resultCode == Activity.RESULT_OK && data != null) {
 					Uri uri = data.getData();
 					if (uri == null) {
@@ -196,11 +204,12 @@ public class ChatActivity extends AppCompatActivity {
 									onFileSelected(newUri);
 								}
 							}, thr -> Log.e(TAG, "SELECT_IMAGE_OR_VIDEO", thr));
+				} else {
+					closeFileDialog();
 				}
 				break;
 			}
 			case AddFileDialog.RequestCodes.SELECT_FILE: {
-				closeFileDialog();
 				if (resultCode == Activity.RESULT_OK && data != null) {
 					Uri uri = data.getData();
 					if (uri == null) {
@@ -214,6 +223,8 @@ public class ChatActivity extends AppCompatActivity {
 							.subscribe(path -> {
 								onFileSelected(Uri.fromFile(new File(path)));
 							}, thr -> Log.e(TAG, "SELECT_FILE", thr));
+				} else {
+					closeFileDialog();
 				}
 				break;
 			}
@@ -228,6 +239,7 @@ public class ChatActivity extends AppCompatActivity {
 				} else {
 					Toast.makeText(this, "Ошибка при попытке вызвать редактор фото", Toast.LENGTH_SHORT).show();
 				}
+				closeFileDialog();
 				break;
 			}
 		}
@@ -274,7 +286,30 @@ public class ChatActivity extends AppCompatActivity {
 		adapter.setOnMessageClickListener(item -> {
 			MessageActionsDialog dialog = new MessageActionsDialog(this, item.sentState == MessageSentState.FAILED);
 			dialog.show();
-			dialog.attach(this, viewModel, item);
+			dialog.attach(new MessageActionsListener() {
+				@Override
+				public void onResend() {
+					if (item.sentState == MessageSentState.FAILED) {
+						ChatMessage message = ChatState.instance.getMessage(item.id);
+						if (message != null) {
+							resendMessage(message);
+						}
+					}
+				}
+
+				@Override
+				public void onCopy() {
+					ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+					ClipData clip = ClipData.newPlainText("Текст сообщения", item.content);
+					clipboard.setPrimaryClip(clip);
+					Toast.makeText(ChatActivity.this, "Скопировано в буфер обмена", Toast.LENGTH_SHORT).show();
+				}
+
+				@Override
+				public void onQuote() {
+					viewModel.setQuoteText(item.content);
+				}
+			});
 		});
 
 		adapter.setOnFileClickListener(fileUrl -> {
@@ -461,7 +496,39 @@ public class ChatActivity extends AppCompatActivity {
 	private void showAddFileDialog() {
 		addFileDialog = new AddFileDialog(this);
 		addFileDialog.show();
-		addFileDialog.attach(this);
+		addFileDialog.attach(new AddFileActions() {
+			@Override
+			public void onCamera() {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+						requestPermissions(new String[]{Manifest.permission.CAMERA},
+								AddFileDialog.RequestCodes.CAMERA_PERMISSION);
+						return;
+					}
+				}
+				addFileDialog.requestCamera(ChatActivity.this);
+			}
+
+			@Override
+			public void onGallery() {
+				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+				intent.addCategory(Intent.CATEGORY_OPENABLE);
+				intent.setType("image/* video/*");
+				startActivityForResult(
+						Intent.createChooser(intent, "Выберите изображение или видео"),
+						AddFileDialog.RequestCodes.SELECT_IMAGE_OR_VIDEO);
+			}
+
+			@Override
+			public void onFile() {
+				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+				intent.addCategory(Intent.CATEGORY_OPENABLE);
+				intent.setType("file/*");
+				startActivityForResult(
+						Intent.createChooser(intent, "Выберите файл"),
+						AddFileDialog.RequestCodes.SELECT_FILE);
+			}
+		});
 	}
 
 	private void setViewState(ChatViewStateData data) {
@@ -476,6 +543,7 @@ public class ChatActivity extends AppCompatActivity {
 			inputContainerView.setVisibility(View.VISIBLE);
 		}
 		sendView.setEnabled(data.inputState != ChatInputState.DISABLED);
+		inputView.setEnabled(true);
 
 		inputFieldContainerView.setBackgroundResource(0);
 

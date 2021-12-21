@@ -66,34 +66,17 @@ public final class AddFileDialog extends Dialog {
 		cancelView.setOnClickListener(v -> dismiss());
 	}
 
-	public void attach(Activity activity) {
+	public void attach(AddFileActions actions) {
 		cameraView.setOnClickListener(v -> {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				if (activity.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-					activity.requestPermissions(new String[]{Manifest.permission.CAMERA},
-							RequestCodes.CAMERA_PERMISSION);
-					return;
-				}
-			}
-			requestCamera(activity);
+			actions.onCamera();
 		});
 
 		galleryView.setOnClickListener(v -> {
-			Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-			intent.addCategory(Intent.CATEGORY_OPENABLE);
-			intent.setType("image/* video/*");
-			activity.startActivityForResult(
-					Intent.createChooser(intent, "Выберите изображение или видео"),
-					RequestCodes.SELECT_IMAGE_OR_VIDEO);
+			actions.onGallery();
 		});
 
 		fileView.setOnClickListener(v -> {
-			Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-			intent.addCategory(Intent.CATEGORY_OPENABLE);
-			intent.setType("file/*");
-			activity.startActivityForResult(
-					Intent.createChooser(intent, "Выберите файл"),
-					RequestCodes.SELECT_FILE);
+			actions.onFile();
 		});
 	}
 
@@ -128,6 +111,10 @@ public final class AddFileDialog extends Dialog {
 	}
 
 	public void close() {
+		dismiss();
+	}
+
+	public void cleanup() {
 		if (sourceFileUri != null) {
 			new File(sourceFileUri.getPath()).delete();
 		}
@@ -135,11 +122,9 @@ public final class AddFileDialog extends Dialog {
 		if (destFileUri != null) {
 			new File(destFileUri.getPath()).delete();
 		}
-
-		dismiss();
 	}
 
-	private void requestCamera(Activity activity) {
+	void requestCamera(Activity activity) {
 		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -158,4 +143,10 @@ public final class AddFileDialog extends Dialog {
 	private String getAppCacheFolder(Context context) {
 		return context.getCacheDir().getAbsolutePath();
 	}
+}
+
+interface AddFileActions {
+	void onCamera();
+	void onGallery();
+	void onFile();
 }
