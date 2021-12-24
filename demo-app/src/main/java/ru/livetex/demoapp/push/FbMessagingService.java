@@ -85,6 +85,7 @@ public final class FbMessagingService extends FirebaseMessagingService {
 				.setTicker(messageTitle)
 				.setOnlyAlertOnce(true)
 				.setAutoCancel(true)
+				.setSmallIcon(R.drawable.logo)
 				.setContentIntent(resultPendingIntent);
 
 		return notificationBuilder.build();
