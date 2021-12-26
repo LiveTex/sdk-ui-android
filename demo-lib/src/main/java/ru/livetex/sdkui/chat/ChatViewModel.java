@@ -118,9 +118,9 @@ public final class ChatViewModel extends ViewModel {
 		disposables.add(messagesHandler.dialogStateUpdate()
 				.observeOn(Schedulers.io())
 				.subscribe(state -> {
-					boolean inputStateChanged = this.isInputShown != state.isInputEnabled();
+					boolean inputStateChanged = this.isInputShown != state.canShowInput();
 					if (inputStateChanged) {
-						this.isInputShown = state.isInputEnabled();
+						this.isInputShown = state.canShowInput();
 						updateViewState(viewStateLiveData.getValue().state);
 					}
 					dialogStateUpdateLiveData.postValue(state);
