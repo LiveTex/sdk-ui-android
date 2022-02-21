@@ -33,7 +33,7 @@ import ru.livetex.sdk.entity.KeyboardEntity;
 import ru.livetex.sdk.entity.LiveTexError;
 import ru.livetex.sdk.entity.TextMessage;
 import ru.livetex.sdk.logic.LiveTexMessagesHandler;
-import ru.livetex.sdk.network.AuthTokenType;
+import ru.livetex.sdk.network.AuthData;
 import ru.livetex.sdk.network.NetworkManager;
 import ru.livetex.sdkui.Const;
 import ru.livetex.sdkui.chat.db.ChatState;
@@ -406,7 +406,7 @@ public final class ChatViewModel extends ViewModel {
 	private void connect() {
 		String visitorToken = sp.getString(Const.KEY_VISITOR_TOKEN, null);
 
-		disposables.add(networkManager.connect(visitorToken, AuthTokenType.DEFAULT)
+		disposables.add(networkManager.connect(AuthData.withVisitorToken(visitorToken), true)
 				.subscribeOn(Schedulers.io())
 				.observeOn(Schedulers.io())
 				.subscribe(visitorTokenReceived -> {

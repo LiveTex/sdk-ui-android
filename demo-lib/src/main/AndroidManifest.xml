@@ -16,9 +16,10 @@
 
 	<application>
 
+		<!-- android:exported is false because this activity not used by external apps. But you can change to true if need. -->
 		<activity
 			android:name=".chat.ChatActivity"
-			android:exported="true"
+			android:exported="false"
 			android:screenOrientation="portrait"/>
 
 		<activity
