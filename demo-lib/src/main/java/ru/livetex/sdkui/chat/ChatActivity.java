@@ -37,10 +37,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -109,14 +108,14 @@ public class ChatActivity extends AppCompatActivity {
 	private TextView quoteView;
 	private ImageView quoteCloseView;
 
-	// For disconnecting from websocket on pause and connecting on resume. If you need active websocket while app in background, just use viewModel.onResume()
-	private final LifecycleObserver lifecycleObserver = new DefaultLifecycleObserver()
+	// For disconnecting from websocket on app background and connecting on app foreground. If you need active websocket while app in background, just use viewModel.onResume()
+	private final LifecycleObserver appLifecycleObserver = new DefaultLifecycleObserver()
 	{
-		@Override public void onResume(@NonNull LifecycleOwner owner) {
+		@Override public void onStart(@NonNull LifecycleOwner owner) {
 			viewModel.onResume();
 		}
 
-		@Override public void onPause(@NonNull LifecycleOwner owner) {
+		@Override public void onStop(@NonNull LifecycleOwner owner) {
 			viewModel.onPause();
 		}
 	};
@@ -153,8 +152,8 @@ public class ChatActivity extends AppCompatActivity {
 
 		setupUI();
 		subscribeViewModel();
-		getLifecycle().addObserver(lifecycleObserver);
 		NetworkManager.getInstance().startObserveNetworkState(this);
+		ProcessLifecycleOwner.get().getLifecycle().addObserver(appLifecycleObserver);
 	}
 
 	@Override
@@ -163,7 +162,7 @@ public class ChatActivity extends AppCompatActivity {
 		disposables.clear();
 
 		NetworkManager.getInstance().stopObserveNetworkState(this);
-		getLifecycle().removeObserver(lifecycleObserver);
+		ProcessLifecycleOwner.get().getLifecycle().removeObserver(appLifecycleObserver);
 
 		closeFileDialog();
 		if (addFileDialog != null) {
