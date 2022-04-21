@@ -56,6 +56,7 @@ dependencies {
 	// ViewModel
 	implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
 	implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
+	implementation "androidx.lifecycle:lifecycle-process:$lifecycle_version"
 	implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
 	implementation "androidx.lifecycle:lifecycle-reactivestreams:$lifecycle_version"
 	// rx
