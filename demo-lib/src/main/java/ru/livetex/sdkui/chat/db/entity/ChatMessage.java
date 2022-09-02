@@ -64,9 +64,14 @@ public final class ChatMessage implements Comparable<ChatMessage> {
 		this.createdAt = createdAt;
 		this.isIncoming = isIncoming;
 		this.sentState = MessageSentState.SENT;
-		this.fileUrl = fileUrl;
 		this.creator = creator;
 		this.keyboard = keyboard;
+		// special handling for operator stickers
+		if (fileUrl != null && fileUrl.startsWith("//")) {
+			this.fileUrl = "https://" + fileUrl;
+		} else {
+			this.fileUrl = fileUrl;
+		}
 	}
 
 	public void setSentState(MessageSentState sentState) {
