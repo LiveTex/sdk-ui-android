@@ -7,10 +7,10 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.TextView;
 
 import java.util.regex.Matcher;
@@ -28,7 +28,7 @@ public final class TextUtils {
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
-	public static Spannable setTextWithLinks(String source, TextView textView) {
+	public static Spannable setTextWithLinks(String source, TextView textView, View.OnClickListener menuClickListener) {
 		boolean hasHtml = containsHtml(source);
 		Spanned text;
 
@@ -81,6 +81,11 @@ public final class TextUtils {
 						link[0].onClick(widget);
 					}
 					ret = true;
+				} else {
+					if (menuClickListener != null && action == MotionEvent.ACTION_UP && !textView.hasSelection()) {
+						menuClickListener.onClick(textView);
+						ret = true;
+					}
 				}
 			}
 			return ret;

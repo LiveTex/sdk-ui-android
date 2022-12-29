@@ -1,14 +1,11 @@
 package ru.livetex.sdkui.chat;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
@@ -124,7 +121,7 @@ public final class AddFileDialog extends Dialog {
 		}
 	}
 
-	void requestCamera(Activity activity) {
+	public void requestCamera(Activity activity) {
 		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -143,10 +140,10 @@ public final class AddFileDialog extends Dialog {
 	private String getAppCacheFolder(Context context) {
 		return context.getCacheDir().getAbsolutePath();
 	}
-}
 
-interface AddFileActions {
-	void onCamera();
-	void onGallery();
-	void onFile();
+	public interface AddFileActions {
+		void onCamera();
+		void onGallery();
+		void onFile();
+	}
 }

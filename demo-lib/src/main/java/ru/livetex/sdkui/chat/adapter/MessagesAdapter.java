@@ -113,12 +113,25 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 	public void onBindViewHolder(@NonNull BaseMessageHolder holder, int position) {
 		final AdapterItem message = items.get(position);
 
+		View.OnClickListener menuClickListener = null;
+		if (onMessageClickListener != null &&
+				message.getAdapterItemType() == ItemType.CHAT_MESSAGE &&
+				holder.getClickableAreaView() != null) {
+			menuClickListener = v -> {
+				try {
+					onMessageClickListener.accept((ChatItem) message);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			};
+		}
+
 		switch (holder.getItemViewType()) {
 			case VIEW_TYPE_MESSAGE_INCOMING:
-				((IncomingMessageHolder) holder).bind((ChatItem) message, onActionButtonClickListener);
+				((IncomingMessageHolder) holder).bind((ChatItem) message, onActionButtonClickListener, menuClickListener);
 				break;
 			case VIEW_TYPE_MESSAGE_OUTGOING:
-				((OutgoingMessageHolder) holder).bind((ChatItem) message);
+				((OutgoingMessageHolder) holder).bind((ChatItem) message, menuClickListener);
 				break;
 			case VIEW_TYPE_IMAGE_INCOMING:
 				((IncomingImageHolder) holder).bind((ChatItem) message, onFileClickListener);
@@ -143,17 +156,8 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 				break;
 		}
 
-		if (onMessageClickListener != null &&
-				message.getAdapterItemType() == ItemType.CHAT_MESSAGE &&
-				holder.getClickableAreaView() != null) {
-			holder.getClickableAreaView().setOnLongClickListener(view -> {
-				try {
-					onMessageClickListener.accept((ChatItem) message);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				return true;
-			});
+		if (menuClickListener != null) {
+			holder.getClickableAreaView().setOnClickListener(menuClickListener);
 		}
 	}
 
@@ -261,8 +265,8 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 			messageContainerView = itemView.findViewById(R.id.messageContainerView);
 		}
 
-		void bind(ChatItem message, Consumer<KeyboardEntity.Button> onActionButtonClickListener) {
-			Spannable text = ru.livetex.sdkui.utils.TextUtils.setTextWithLinks(message.content, messageView);
+		void bind(ChatItem message, Consumer<KeyboardEntity.Button> onActionButtonClickListener, View.OnClickListener menuClickListener) {
+			Spannable text = ru.livetex.sdkui.utils.TextUtils.setTextWithLinks(message.content, messageView, menuClickListener);
 			handleQuotedText(message, quoteView, quoteSeparatorView);
 			handleLinkPreview(messageView, text, message.id);
 
@@ -368,8 +372,8 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 			messageContainerView = itemView.findViewById(R.id.messageContainerView);
 		}
 
-		void bind(ChatItem message) {
-			Spannable text = ru.livetex.sdkui.utils.TextUtils.setTextWithLinks(message.content, messageView);
+		void bind(ChatItem message, View.OnClickListener menuClickListener) {
+			Spannable text = ru.livetex.sdkui.utils.TextUtils.setTextWithLinks(message.content, messageView, menuClickListener);
 			handleQuotedText(message, quoteView, quoteSeparatorView);
 			handleLinkPreview(messageView, text, message.id);
 
@@ -477,7 +481,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 		}
 
 		void bind(ChatItem message) {
-			ru.livetex.sdkui.utils.TextUtils.setTextWithLinks(message.content, messageView);
+			ru.livetex.sdkui.utils.TextUtils.setTextWithLinks(message.content, messageView, null);
 		}
 	}
 

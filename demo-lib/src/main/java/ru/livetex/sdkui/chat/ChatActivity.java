@@ -495,7 +495,7 @@ public class ChatActivity extends AppCompatActivity {
 	private void showAddFileDialog() {
 		addFileDialog = new AddFileDialog(this);
 		addFileDialog.show();
-		addFileDialog.attach(new AddFileActions() {
+		addFileDialog.attach(new AddFileDialog.AddFileActions() {
 			@Override
 			public void onCamera() {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
