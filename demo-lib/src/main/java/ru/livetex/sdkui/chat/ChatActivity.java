@@ -108,15 +108,15 @@ public class ChatActivity extends AppCompatActivity {
 	private TextView quoteView;
 	private ImageView quoteCloseView;
 
-	// For disconnecting from websocket on app background and connecting on app foreground. If you need active websocket while app in background, just use viewModel.onResume()
+	// For disconnecting from websocket on app background and connecting on app foreground. If you need active websocket while app in background, just use viewModel.start()
 	private final LifecycleObserver appLifecycleObserver = new DefaultLifecycleObserver()
 	{
 		@Override public void onStart(@NonNull LifecycleOwner owner) {
-			viewModel.onResume();
+			viewModel.start();
 		}
 
 		@Override public void onStop(@NonNull LifecycleOwner owner) {
-			viewModel.onPause();
+			viewModel.stop();
 		}
 	};
 
@@ -163,6 +163,8 @@ public class ChatActivity extends AppCompatActivity {
 
 		NetworkManager.getInstance().stopObserveNetworkState(this);
 		ProcessLifecycleOwner.get().getLifecycle().removeObserver(appLifecycleObserver);
+		// Force call because observer won't receive it
+		viewModel.stop();
 
 		closeFileDialog();
 		if (addFileDialog != null) {
