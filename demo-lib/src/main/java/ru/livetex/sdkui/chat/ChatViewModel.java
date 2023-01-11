@@ -325,11 +325,11 @@ public final class ChatViewModel extends ViewModel {
 		disposables.add(d);
 	}
 
-	public void onResume() {
+	public void start() {
 		connect();
 	}
 
-	public void onPause() {
+	public void stop() {
 		networkManager.forceDisconnect();
 	}
 
