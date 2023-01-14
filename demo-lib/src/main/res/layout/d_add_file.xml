@@ -96,6 +96,7 @@
 		android:textAppearance="?android:textAppearanceMedium"
 		android:textColor="@android:color/black"
 		android:textSize="18sp"
+		android:gravity="center"
 		app:backgroundTint="@android:color/white"
 		app:cornerRadius="15dp"
 		app:elevation="10dp" />
