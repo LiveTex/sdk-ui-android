@@ -535,7 +535,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 		@Nullable
 		@Override
 		View getClickableAreaView() {
-			return imageView;
+			return null;
 		}
 	}
 
@@ -569,7 +569,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 		@Nullable
 		@Override
 		View getClickableAreaView() {
-			return imageView;
+			return null;
 		}
 	}
 
