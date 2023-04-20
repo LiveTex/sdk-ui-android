@@ -61,6 +61,7 @@ dependencies {
 	implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 	// image
+	implementation 'com.github.MikeOrtiz:TouchImageView:a64b584fef'
 	implementation 'com.github.bumptech.glide:glide:4.15.1'
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 	implementation 'com.github.maxxx:uCrop:2.3.1'
