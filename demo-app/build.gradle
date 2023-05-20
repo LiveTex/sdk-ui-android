@@ -8,8 +8,8 @@ android {
 		applicationId "ru.livetex.demoapp"
 		minSdkVersion 21
 		targetSdkVersion 31
-		versionCode 12
-		versionName "1.7"
+		versionCode 13
+		versionName "1.8"
 	}
 
 	buildTypes {
