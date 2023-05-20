@@ -9,7 +9,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import ru.livetex.demoapp.App;
 import ru.livetex.demoapp.R;
-import ru.livetex.sdkui.chat.ChatActivity;
+import ru.livetex.demoapp.ui.landing.LandingActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -17,13 +17,13 @@ public class SplashActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.a_splash);
+
 		Disposable d = App.getInstance().init()
 				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.subscribe(() -> {
-					startActivity(new Intent(this, ChatActivity.class));
+					startActivity(new Intent(this, LandingActivity.class));
 					finish();
-					overridePendingTransition(0, android.R.anim.fade_out);
 				});
 	}
 }

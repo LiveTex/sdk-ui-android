@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	package="ru.livetex.demoapp">
 
 	<application
@@ -8,7 +9,9 @@
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"
 		android:roundIcon="@mipmap/ic_launcher_round"
-		android:theme="@style/Theme.Livetex">
+		android:theme="@style/Theme.Livetex"
+		tools:ignore="DataExtractionRules">
+
 		<activity
 			android:name=".ui.splash.SplashActivity"
 			android:exported="true"
@@ -20,6 +23,18 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<activity
+			android:name=".ui.settings.SettingsActivity"
+			android:exported="false"
+			android:theme="@style/Theme.Chat"
+			android:screenOrientation="portrait"/>
+
+		<activity
+			android:name=".ui.landing.LandingActivity"
+			android:exported="false"
+			android:theme="@style/Theme.Chat"
+			android:screenOrientation="portrait"/>
 
 		<!-- android:exported is false because this activity not used by external apps. But you can change to true if need. -->
 		<activity
