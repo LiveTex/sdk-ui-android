@@ -405,8 +405,25 @@ public final class ChatViewModel extends ViewModel {
 
 	private void connect() {
 		String visitorToken = sp.getString(Const.KEY_VISITOR_TOKEN, null);
+		String customToken = sp.getString(Const.KEY_CUSTOM_TOKEN, null);
+		Const.TokenType connectType = Const.TokenType.values()[sp.getInt(Const.KEY_CONNECT_TYPE, 0)];
 
-		disposables.add(networkManager.connect(AuthData.withVisitorToken(visitorToken), true)
+		AuthData authData;
+
+		switch (connectType) {
+			case VISITOR:
+			default:
+				authData = AuthData.withVisitorToken(visitorToken);
+				break;
+			case CUSTOM:
+				authData = AuthData.withCustomVisitorToken(customToken);
+				break;
+			case VISITOR_AND_CUSTOM:
+				authData = AuthData.withVisitorAndCustomTokens(visitorToken, customToken);
+				break;
+		}
+
+		disposables.add(networkManager.connect(authData, true)
 				.subscribeOn(Schedulers.io())
 				.observeOn(Schedulers.io())
 				.subscribe(visitorTokenReceived -> {

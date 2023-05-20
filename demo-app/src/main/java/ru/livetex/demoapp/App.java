@@ -1,6 +1,9 @@
 package ru.livetex.demoapp;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.Objects;
@@ -52,10 +55,21 @@ public class App extends Application {
 	}
 
 	private void initLiveTex(@Nullable String pushToken) {
-		if (Objects.equals(Const.TOUCHPOINT, "YOUR_TOUCH_POINT")) {
+		SharedPreferences sp = getSharedPreferences(ru.livetex.sdkui.Const.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+		String customTouchpoint = sp.getString(ru.livetex.sdkui.Const.KEY_CUSTOM_TOUCHPOINT, "");
+		String touchpoint;
+
+		if (!TextUtils.isEmpty(customTouchpoint)) {
+			touchpoint = customTouchpoint;
+		} else {
+			touchpoint = Const.TOUCHPOINT;
+		}
+
+		if (Objects.equals(touchpoint, "YOUR_TOUCH_POINT")) {
 			throw new IllegalArgumentException("Please set Const.TOUCHPOINT to your Livetex touchpoint");
 		}
-		new LiveTex.Builder(Const.TOUCHPOINT)
+
+		new LiveTex.Builder(touchpoint)
 				.setDeviceToken(pushToken)
 //				.setWebsocketLoggingEnabled()
 //				.setNetworkLoggingEnabled()

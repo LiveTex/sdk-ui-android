@@ -148,7 +148,7 @@ public class ChatActivity extends AppCompatActivity {
 		quoteView = findViewById(R.id.quoteView);
 		quoteCloseView = findViewById(R.id.quoteCloseView);
 
-		viewModel = new ChatViewModelFactory(getSharedPreferences("livetex-demo", Context.MODE_PRIVATE)).create(ChatViewModel.class);
+		viewModel = new ChatViewModelFactory(getSharedPreferences(Const.SHARED_PREFS_NAME, Context.MODE_PRIVATE)).create(ChatViewModel.class);
 
 		setupUI();
 		subscribeViewModel();
