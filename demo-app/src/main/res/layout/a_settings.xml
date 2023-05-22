@@ -1,72 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	xmlns:tools="http://schemas.android.com/tools"
 	android:background="@android:color/white"
-	android:padding="16dp"
-	android:orientation="vertical">
+	android:orientation="vertical"
+	android:padding="16dp">
 
 	<TextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="Текущий visitor token" />
+		android:text="Текущий visitor token"
+		android:textColor="@color/black" />
 
 	<TextView
 		android:id="@+id/curVisitorToken"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginTop="5dp"
+		android:textColor="@color/black"
 		tools:text="0" />
 
 	<TextView
 		android:layout_width="wrap_content"
-		android:layout_marginTop="20dp"
 		android:layout_height="wrap_content"
-		android:text="Custom visitor token" />
+		android:layout_marginTop="20dp"
+		android:text="Custom visitor token"
+		android:textColor="@color/black" />
 
 	<EditText
 		android:id="@+id/customToken"
-		android:minWidth="200dp"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:inputType="text"/>
+		android:inputType="text"
+		android:minWidth="200dp"
+		android:textColor="@color/black" />
 
 	<TextView
 		android:layout_width="wrap_content"
-		android:layout_marginTop="20dp"
 		android:layout_height="wrap_content"
-		android:text="Custom touchpoint" />
+		android:layout_marginTop="20dp"
+		android:text="Custom touchpoint"
+		android:textColor="@color/black" />
 
 	<EditText
 		android:id="@+id/customTouchpoint"
-		android:minWidth="200dp"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:inputType="text"/>
+		android:inputType="text"
+		android:minWidth="200dp"
+		android:textColor="@color/black" />
 
 	<Button
 		android:id="@+id/visitorOnly"
 		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
 		android:layout_marginTop="20dp"
-		android:textAllCaps="false"
+		android:backgroundTint="@color/dark_violet"
 		android:text="Авторизоваться только с visitor token"
-		android:layout_height="wrap_content"/>
+		android:textAllCaps="false" />
 
 	<Button
 		android:id="@+id/customOnly"
 		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
 		android:layout_marginTop="10dp"
-		android:textAllCaps="false"
+		android:backgroundTint="@color/dark_violet"
 		android:text="Авторизоваться только с custom token"
-		android:layout_height="wrap_content"/>
+		android:textAllCaps="false" />
 
 	<Button
 		android:id="@+id/customAndVisitor"
 		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
 		android:layout_marginTop="10dp"
-		android:textAllCaps="false"
+		android:backgroundTint="@color/dark_violet"
 		android:text="Авторизоваться с custom token И с visitor token"
-		android:layout_height="wrap_content"/>
+		android:textAllCaps="false" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -17,6 +17,7 @@
 			android:layout_height="wrap_content"
 			android:layout_gravity="center"
 			android:text="Открыть чат"
+			android:backgroundTint="@color/dark_violet"
 			android:textAllCaps="false" />
 
 		<Button
@@ -26,6 +27,7 @@
 			android:layout_gravity="center"
 			android:layout_marginTop="50dp"
 			android:text="Настройки"
+			android:backgroundTint="@color/dark_violet"
 			android:textAllCaps="false" />
 	</LinearLayout>
 
