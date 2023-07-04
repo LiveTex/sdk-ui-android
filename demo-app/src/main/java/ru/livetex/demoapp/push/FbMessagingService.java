@@ -76,7 +76,7 @@ public final class FbMessagingService extends FirebaseMessagingService {
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 		stackBuilder.addNextIntentWithParentStack(resultIntent);
 		PendingIntent resultPendingIntent =
-				stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+				stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 		notificationBuilder = notificationBuilder
 				.setDefaults(android.app.Notification.DEFAULT_ALL)
