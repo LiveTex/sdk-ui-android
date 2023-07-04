@@ -16,7 +16,8 @@
 			android:name=".ui.splash.SplashActivity"
 			android:exported="true"
 			android:screenOrientation="portrait"
-			android:theme="@style/Theme.Chat">
+			android:theme="@style/Theme.Chat"
+			tools:ignore="LockedOrientationActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 
@@ -28,20 +29,23 @@
 			android:name=".ui.settings.SettingsActivity"
 			android:exported="false"
 			android:theme="@style/Theme.Chat"
-			android:screenOrientation="portrait"/>
+			android:screenOrientation="portrait"
+			tools:ignore="LockedOrientationActivity"/>
 
 		<activity
 			android:name=".ui.landing.LandingActivity"
 			android:exported="false"
 			android:theme="@style/Theme.Chat"
-			android:screenOrientation="portrait"/>
+			android:screenOrientation="portrait"
+			tools:ignore="LockedOrientationActivity"/>
 
 		<!-- android:exported is false because this activity not used by external apps. But you can change to true if need. -->
 		<activity
 			android:name="ru.livetex.sdkui.chat.ChatActivity"
 			android:exported="false"
 			android:screenOrientation="portrait"
-			android:theme="@style/Theme.Chat" />
+			android:theme="@style/Theme.Chat"
+			tools:ignore="LockedOrientationActivity"/>
 
 		<activity
 			android:name="ru.livetex.sdkui.chat.image.ImageActivity"
