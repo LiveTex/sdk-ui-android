@@ -43,12 +43,12 @@ android {
 	}
 
 	// for JitPack
-	publishing {
-		singleVariant('release') {
-			withSourcesJar()
-			withJavadocJar()
-		}
-	}
+//	publishing {
+//		singleVariant('release') {
+//			withSourcesJar()
+//			withJavadocJar()
+//		}
+//	}
 
 	namespace 'ru.livetex.sdkui'
 }
@@ -88,7 +88,7 @@ afterEvaluate {
 			// Creates a Maven publication called "release".
 			release(MavenPublication) {
 				// Applies the component for the release build variant.
-				components.getByName('release')
+				from components.release
 
 				groupId = 'com.github.LiveTex'
 				artifactId = 'sdk-android-ui'
