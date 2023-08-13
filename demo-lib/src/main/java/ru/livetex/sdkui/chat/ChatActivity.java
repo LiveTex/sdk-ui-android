@@ -32,6 +32,9 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.google.android.material.button.MaterialButton;
 import com.yalantis.ucrop.UCrop;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -120,6 +123,28 @@ public class ChatActivity extends AppCompatActivity {
 		}
 	};
 
+	private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+			registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+				// Callback is invoked after the user selects a media item or closes the
+				// photo picker.
+				if (uri != null) {
+					Disposable d = Single
+							.fromCallable(() -> FileUtils.getPath(this, uri))
+							.subscribeOn(Schedulers.io())
+							.observeOn(AndroidSchedulers.mainThread())
+							.subscribe(path -> {
+								Uri newUri = Uri.fromFile(new File(path));
+								if (!FileUtils.getMimeType(this, newUri).contains("video")) {
+									addFileDialog.crop(this, newUri);
+								} else {
+									onFileSelected(newUri);
+								}
+							}, thr -> Log.e(TAG, "SELECT_IMAGE_OR_VIDEO", thr));
+				} else {
+					closeFileDialog();
+				}
+			});
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -186,30 +211,6 @@ public class ChatActivity extends AppCompatActivity {
 				}
 				break;
 			}
-			case AddFileDialog.RequestCodes.SELECT_IMAGE_OR_VIDEO: {
-				if (resultCode == Activity.RESULT_OK && data != null) {
-					Uri uri = data.getData();
-					if (uri == null) {
-						Toast.makeText(this, "Не удалось открыть файл", Toast.LENGTH_SHORT).show();
-						return;
-					}
-					Disposable d = Single
-							.fromCallable(() -> FileUtils.getPath(this, uri))
-							.subscribeOn(Schedulers.io())
-							.observeOn(AndroidSchedulers.mainThread())
-							.subscribe(path -> {
-								Uri newUri = Uri.fromFile(new File(path));
-								if (!FileUtils.getMimeType(this, newUri).contains("video")) {
-									addFileDialog.crop(this, newUri);
-								} else {
-									onFileSelected(newUri);
-								}
-							}, thr -> Log.e(TAG, "SELECT_IMAGE_OR_VIDEO", thr));
-				} else {
-					closeFileDialog();
-				}
-				break;
-			}
 			case AddFileDialog.RequestCodes.SELECT_FILE: {
 				if (resultCode == Activity.RESULT_OK && data != null) {
 					Uri uri = data.getData();
@@ -237,7 +238,7 @@ public class ChatActivity extends AppCompatActivity {
 						return;
 					}
 					onFileSelected(resultUri);
-				} else {
+				} else if (resultCode != Activity.RESULT_CANCELED) {
 					Toast.makeText(this, "Ошибка при попытке вызвать редактор фото", Toast.LENGTH_SHORT).show();
 				}
 				closeFileDialog();
@@ -512,19 +513,15 @@ public class ChatActivity extends AppCompatActivity {
 
 			@Override
 			public void onGallery() {
-				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-				intent.addCategory(Intent.CATEGORY_OPENABLE);
-				intent.setType("image/* video/*");
-				startActivityForResult(
-						Intent.createChooser(intent, "Выберите изображение или видео"),
-						AddFileDialog.RequestCodes.SELECT_IMAGE_OR_VIDEO);
+				pickMedia.launch(new PickVisualMediaRequest.Builder()
+						.setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.INSTANCE)
+						.build());
 			}
 
 			@Override
 			public void onFile() {
 				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-				intent.addCategory(Intent.CATEGORY_OPENABLE);
-				intent.setType("file/*");
+				intent.setType("*/*");
 				startActivityForResult(
 						Intent.createChooser(intent, "Выберите файл"),
 						AddFileDialog.RequestCodes.SELECT_FILE);
@@ -625,6 +622,7 @@ public class ChatActivity extends AppCompatActivity {
 
 	private void onFileSelected(Uri file) {
 		viewModel.onFileSelected(file);
+		closeFileDialog();
 	}
 
 	private void sendMessage() {
