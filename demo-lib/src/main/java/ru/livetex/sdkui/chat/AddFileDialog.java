@@ -26,7 +26,6 @@ public final class AddFileDialog extends Dialog {
 
 	public interface RequestCodes {
 		int CAMERA = 1000;
-		int SELECT_IMAGE_OR_VIDEO = 1001;
 		int SELECT_FILE = 1002;
 		int CAMERA_PERMISSION = 1002;
 	}
