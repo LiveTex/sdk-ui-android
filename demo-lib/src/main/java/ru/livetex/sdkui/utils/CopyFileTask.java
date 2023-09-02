@@ -31,7 +31,7 @@ final class CopyFileTask {
 		try {
 			is = context.getContentResolver().openInputStream(uri);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			Log.e("CopyFileTask", "openInputStream", e);
 		}
 
 		try {
@@ -47,7 +47,11 @@ final class CopyFileTask {
 						}
 					}
 				}
-			} finally {
+			}
+			catch (Exception e) {
+				Log.e("CopyFileTask", "size checker", e);
+			}
+			finally {
 				if (returnCursor != null) {
 					returnCursor.close();
 				}
@@ -58,7 +62,7 @@ final class CopyFileTask {
 			BufferedInputStream bis = new BufferedInputStream(is);
 			FileOutputStream fos = new FileOutputStream(file);
 
-			byte[] data = new byte[8192];
+			byte[] data = new byte[16 * 1024];
 			long total = 0;
 			int count;
 			while ((count = bis.read(data)) != -1) {
@@ -67,8 +71,8 @@ final class CopyFileTask {
 			}
 			fos.flush();
 			fos.close();
-		} catch (IOException e) {
-			Log.e("CopyFileTask", e.getMessage());
+		} catch (Exception e) {
+			Log.e("CopyFileTask", "task failed with", e);
 		}
 
 		return file.getAbsolutePath();

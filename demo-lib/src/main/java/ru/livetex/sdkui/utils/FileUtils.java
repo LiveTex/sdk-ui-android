@@ -24,7 +24,7 @@ public final class FileUtils {
 		returnedPath = getRealPathFromUri(context, uri);
 
 		// Get the file extension
-		final MimeTypeMap mime = MimeTypeMap.getSingleton();
+		//final MimeTypeMap mime = MimeTypeMap.getSingleton();
 
 		if (uri.getScheme() != null && uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
 			return copyFile(uri, context);

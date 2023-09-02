@@ -24,6 +24,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import com.bumptech.glide.Glide;
@@ -47,6 +48,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -75,8 +77,10 @@ import ru.livetex.sdkui.utils.InputUtils;
 import ru.livetex.sdkui.utils.IntentUtils;
 import ru.livetex.sdkui.utils.RecyclerViewScrollListener;
 import ru.livetex.sdkui.utils.TextWatcherAdapter;
+import ru.livetex.sdkui.utils.picker.LivetexPicker;
+import ru.livetex.sdkui.utils.picker.LivetexPickerHandler;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements LivetexPickerHandler {
 	private static final String TAG = "MainActivity";
 	private static final int REQUEST_CODE_STORAGE = 2000;
 
@@ -112,38 +116,41 @@ public class ChatActivity extends AppCompatActivity {
 	private ImageView quoteCloseView;
 
 	// For disconnecting from websocket on app background and connecting on app foreground. If you need active websocket while app in background, just use viewModel.start()
-	private final LifecycleObserver appLifecycleObserver = new DefaultLifecycleObserver()
-	{
-		@Override public void onStart(@NonNull LifecycleOwner owner) {
+	private final LifecycleObserver appLifecycleObserver = new DefaultLifecycleObserver() {
+		@Override
+		public void onStart(@NonNull LifecycleOwner owner) {
 			viewModel.start();
 		}
 
-		@Override public void onStop(@NonNull LifecycleOwner owner) {
+		@Override
+		public void onStop(@NonNull LifecycleOwner owner) {
 			viewModel.stop();
 		}
 	};
 
-	private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
-			registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
-				// Callback is invoked after the user selects a media item or closes the
-				// photo picker.
-				if (uri != null) {
-					Disposable d = Single
-							.fromCallable(() -> FileUtils.getPath(this, uri))
-							.subscribeOn(Schedulers.io())
-							.observeOn(AndroidSchedulers.mainThread())
-							.subscribe(path -> {
-								Uri newUri = Uri.fromFile(new File(path));
-								if (!FileUtils.getMimeType(this, newUri).contains("video")) {
-									addFileDialog.crop(this, newUri);
-								} else {
-									onFileSelected(newUri);
-								}
-							}, thr -> Log.e(TAG, "SELECT_IMAGE_OR_VIDEO", thr));
-				} else {
-					closeFileDialog();
-				}
-			});
+//	private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+//			registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+//				// Callback is invoked after the user selects a media item or closes the
+//				// photo picker.
+//				if (uri != null) {
+//					Disposable d = Single
+//							.fromCallable(() -> FileUtils.getPath(this, uri))
+//							.subscribeOn(Schedulers.io())
+//							.observeOn(AndroidSchedulers.mainThread())
+//							.subscribe(path -> {
+//								Uri newUri = Uri.fromFile(new File(path));
+//								if (!FileUtils.getMimeType(this, newUri).contains("video")) {
+//									addFileDialog.crop(this, newUri);
+//								} else {
+//									onFileSelected(newUri);
+//								}
+//							}, thr -> Log.e(TAG, "SELECT_IMAGE_OR_VIDEO", thr));
+//				} else {
+//					closeFileDialog();
+//				}
+//			});
+
+	private LivetexPicker picker = new LivetexPicker(this, this);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -192,10 +199,6 @@ public class ChatActivity extends AppCompatActivity {
 		viewModel.stop();
 
 		closeFileDialog();
-		if (addFileDialog != null) {
-			addFileDialog.cleanup();
-			addFileDialog = null;
-		}
 	}
 
 	@Override
@@ -211,37 +214,20 @@ public class ChatActivity extends AppCompatActivity {
 				}
 				break;
 			}
-			case AddFileDialog.RequestCodes.SELECT_FILE: {
-				if (resultCode == Activity.RESULT_OK && data != null) {
-					Uri uri = data.getData();
-					if (uri == null) {
-						Toast.makeText(this, "Не удалось открыть файл", Toast.LENGTH_SHORT).show();
-						return;
-					}
-					Disposable d = Single
-							.fromCallable(() -> FileUtils.getPath(this, uri))
-							.subscribeOn(Schedulers.io())
-							.observeOn(AndroidSchedulers.mainThread())
-							.subscribe(path -> {
-								onFileSelected(Uri.fromFile(new File(path)));
-							}, thr -> Log.e(TAG, "SELECT_FILE", thr));
-				} else {
-					closeFileDialog();
-				}
-				break;
-			}
 			case UCrop.REQUEST_CROP: {
 				if (resultCode == Activity.RESULT_OK && data != null) {
 					final Uri resultUri = UCrop.getOutput(data);
 					if (resultUri == null) {
+						closeFileDialog();
 						Log.e(TAG, "crop: resultUri == null");
 						return;
 					}
-					onFileSelected(resultUri);
+					addFileDialog.close(false);
+					handleFile(resultUri);
 				} else if (resultCode != Activity.RESULT_CANCELED) {
 					Toast.makeText(this, "Ошибка при попытке вызвать редактор фото", Toast.LENGTH_SHORT).show();
+					closeFileDialog();
 				}
-				closeFileDialog();
 				break;
 			}
 		}
@@ -250,11 +236,6 @@ public class ChatActivity extends AppCompatActivity {
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		switch (requestCode) {
-			case REQUEST_CODE_STORAGE:
-				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-					showAddFileDialog();
-				}
-				break;
 			case AddFileDialog.RequestCodes.CAMERA_PERMISSION:
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 					if (addFileDialog != null) {
@@ -444,16 +425,7 @@ public class ChatActivity extends AppCompatActivity {
 
 		addView.setOnClickListener(v -> {
 			InputUtils.hideKeyboard(this);
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-					showAddFileDialog();
-				} else {
-					requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_CODE_STORAGE);
-				}
-			} else {
-				showAddFileDialog();
-			}
+			showAddFileDialog();
 		});
 
 		Disposable disposable = textSubject
@@ -503,7 +475,7 @@ public class ChatActivity extends AppCompatActivity {
 			public void onCamera() {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 					if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-						requestPermissions(new String[]{Manifest.permission.CAMERA},
+						requestPermissions(new String[] { Manifest.permission.CAMERA },
 								AddFileDialog.RequestCodes.CAMERA_PERMISSION);
 						return;
 					}
@@ -513,18 +485,12 @@ public class ChatActivity extends AppCompatActivity {
 
 			@Override
 			public void onGallery() {
-				pickMedia.launch(new PickVisualMediaRequest.Builder()
-						.setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.INSTANCE)
-						.build());
+				picker.selectPhoto();
 			}
 
 			@Override
 			public void onFile() {
-				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-				intent.setType("*/*");
-				startActivityForResult(
-						Intent.createChooser(intent, "Выберите файл"),
-						AddFileDialog.RequestCodes.SELECT_FILE);
+				picker.selectFile();
 			}
 		});
 	}
@@ -620,9 +586,35 @@ public class ChatActivity extends AppCompatActivity {
 		}
 	}
 
-	private void onFileSelected(Uri file) {
-		viewModel.onFileSelected(file);
-		closeFileDialog();
+	@Override
+	public void onFileSelected(@Nullable Uri uri) {
+		if (uri == null) {
+			return;
+		}
+
+		Disposable ignore = Maybe
+				.fromCallable(() -> FileUtils.getPath(ChatActivity.this, uri))
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread())
+				.subscribe(path -> {
+					Uri newUri = Uri.fromFile(new File(path));
+
+					if (FileUtils.getMimeType(this, newUri).contains("image")) {
+						addFileDialog.crop(this, newUri);
+					} else {
+						closeFileDialog();
+						handleFile(newUri);
+					}
+				}, thr -> {
+					Log.e(TAG, "onFileSelected", thr);
+				}, () -> {
+				});
+	}
+
+	private void handleFile(@Nullable Uri file) {
+		if (file != null) {
+			viewModel.onFileSelected(file);
+		}
 	}
 
 	private void sendMessage() {
@@ -650,7 +642,8 @@ public class ChatActivity extends AppCompatActivity {
 
 	private void closeFileDialog() {
 		if (addFileDialog != null && addFileDialog.isShowing()) {
-			addFileDialog.close();
+			addFileDialog.close(true);
+			addFileDialog = null;
 		}
 	}
 
