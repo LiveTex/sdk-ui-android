@@ -391,6 +391,8 @@ public final class ChatViewModel extends ViewModel {
 
 							// in real project here should be saving (upsert) in persistent storage
 							ChatState.instance.addOrUpdateMessage(chatMessage);
+
+							f.delete();
 						},
 						thr -> {
 							Log.e(TAG, "onFileUpload", thr);

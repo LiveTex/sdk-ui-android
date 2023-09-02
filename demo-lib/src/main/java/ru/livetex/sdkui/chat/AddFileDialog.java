@@ -22,11 +22,10 @@ import androidx.core.content.FileProvider;
 import ru.livetex.sdkui.R;
 
 public final class AddFileDialog extends Dialog {
-	private static final String TAG = "AddPhotoDialog";
+	private static final String TAG = "AddFileDialog";
 
 	public interface RequestCodes {
 		int CAMERA = 1000;
-		int SELECT_FILE = 1002;
 		int CAMERA_PERMISSION = 1002;
 	}
 
@@ -106,18 +105,15 @@ public final class AddFileDialog extends Dialog {
 		return sourceFileUri;
 	}
 
-	public void close() {
-		dismiss();
-	}
-
-	public void cleanup() {
+	public void close(boolean deleteDestFile) {
 		if (sourceFileUri != null) {
 			new File(sourceFileUri.getPath()).delete();
 		}
-
-		if (destFileUri != null) {
+		// should be deleted after file sent or canceled
+		if (destFileUri != null && deleteDestFile) {
 			new File(destFileUri.getPath()).delete();
 		}
+		dismiss();
 	}
 
 	public void requestCamera(Activity activity) {
