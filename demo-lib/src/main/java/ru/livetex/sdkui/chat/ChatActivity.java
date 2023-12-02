@@ -534,7 +534,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 				String mime = FileUtils.getMimeType(this, viewModel.selectedFile);
 
-				if (mime.contains("image")) {
+				if (mime != null && mime.contains("image")) {
 					Glide.with(this)
 							.load(viewModel.selectedFile)
 							.placeholder(R.drawable.placeholder)
@@ -598,8 +598,9 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				.observeOn(AndroidSchedulers.mainThread())
 				.subscribe(path -> {
 					Uri newUri = Uri.fromFile(new File(path));
+					String mime = FileUtils.getMimeType(this, newUri);
 
-					if (FileUtils.getMimeType(this, newUri).contains("image")) {
+					if (mime != null && mime.contains("image")) {
 						addFileDialog.crop(this, newUri);
 					} else {
 						closeFileDialog();

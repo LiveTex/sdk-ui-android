@@ -13,6 +13,7 @@ import android.webkit.MimeTypeMap;
 
 import java.io.File;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 public final class FileUtils {
@@ -32,10 +33,12 @@ public final class FileUtils {
 		return returnedPath;
 	}
 
+	@Nullable
 	public static String getMimeType(Context context, Uri uri) {
-		String returnedPath;
-
-		returnedPath = getRealPathFromUri(context, uri);
+		String returnedPath = getRealPathFromUri(context, uri);
+		if (returnedPath == null) {
+			return null;
+		}
 
 		final MimeTypeMap mime = MimeTypeMap.getSingleton();
 		String subStringExtension = String.valueOf(returnedPath).substring(String.valueOf(returnedPath).lastIndexOf(".") + 1);
@@ -123,7 +126,7 @@ public final class FileUtils {
 
 				return getDataColumn(context, contentUri, selection, selectionArgs);
 			}
-		} else if ("content".equalsIgnoreCase(uri.getScheme())) {
+		} else if (uri != null && "content".equalsIgnoreCase(uri.getScheme())) {
 			if (isGooglePhotosUri(uri)) {
 				return uri.getLastPathSegment();
 			}
@@ -131,7 +134,7 @@ public final class FileUtils {
 				// some error
 			}
 			return getDataColumn(context, uri, null, null);
-		} else if ("file".equalsIgnoreCase(uri.getScheme())) {
+		} else if (uri != null && "file".equalsIgnoreCase(uri.getScheme())) {
 			return uri.getPath();
 		}
 
