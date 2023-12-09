@@ -36,10 +36,16 @@ android {
 		sourceCompatibility JavaVersion.VERSION_17
 		targetCompatibility JavaVersion.VERSION_17
 	}
+
 	lint {
 		abortOnError false
 	}
+
 	namespace 'ru.livetex.demoapp'
+
+	buildFeatures {
+		buildConfig true
+	}
 }
 
 dependencies {
@@ -60,5 +66,5 @@ dependencies {
 	implementation 'com.github.bumptech.glide:glide:4.15.1'
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 	// Firebase services
-	implementation 'com.google.firebase:firebase-messaging:23.2.1'
+	implementation 'com.google.firebase:firebase-messaging:23.3.1'
 }
