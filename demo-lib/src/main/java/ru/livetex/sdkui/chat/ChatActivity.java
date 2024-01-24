@@ -24,7 +24,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import com.bumptech.glide.Glide;
@@ -33,13 +32,9 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.google.android.material.button.MaterialButton;
 import com.yalantis.ucrop.UCrop;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -49,7 +44,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 import io.reactivex.Maybe;
-import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -485,7 +479,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 			@Override
 			public void onGallery() {
-				picker.selectPhoto();
+				picker.selectMedia();
 			}
 
 			@Override
