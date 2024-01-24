@@ -41,21 +41,21 @@ public class LivetexPicker {
 		reqPermissions = activity.registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
 			if (isGranted) {
 				Log.d(TAG, "Permission granted");
-				selectPhoto();
+				selectMedia();
 			} else {
 				Log.i(TAG, "Permission denied");
 			}
 		});
 	}
 
-	public void selectPhoto() {
+	public void selectMedia() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
 			if (!hasPermission()) {
 				requestPermission();
 				return;
 			}
 		}
-		pickMedia.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
+		pickMedia.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.INSTANCE).build());
 	}
 
 	public void selectFile() {
