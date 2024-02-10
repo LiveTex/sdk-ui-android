@@ -388,10 +388,8 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 	}
 
 	private void setupInput() {
-		// --- Chat input
-		sendView.setOnClickListener(v -> {
-			if (!canSendMessage()) {
-				Toast.makeText(this, "Отправка сейчас недоступна", Toast.LENGTH_SHORT).show();
+		Runnable sendAction = () -> {
+			if (!validateSend()) {
 				return;
 			}
 			// Send file or message
@@ -401,17 +399,18 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 					viewModel.sendFile(path);
 				}
 			} else {
-				sendMessage();
+				sendTextMessage();
 			}
+		};
+
+		// --- Chat input
+		sendView.setOnClickListener(v -> {
+			sendAction.run();
 		});
 
 		inputView.setOnEditorActionListener((v, actionId, event) -> {
 			if (actionId == EditorInfo.IME_ACTION_SEND) {
-				if (!canSendMessage()) {
-					Toast.makeText(this, "Отправка сейчас недоступна", Toast.LENGTH_SHORT).show();
-					return true;
-				}
-				sendMessage();
+				sendAction.run();
 				return true;
 			}
 			return false;
@@ -459,6 +458,18 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			InputUtils.hideKeyboard(this);
 			viewModel.sendAttributes(name, phone, email);
 		});
+	}
+
+	private boolean validateSend() {
+		if (!canSendMessage()) {
+			Toast.makeText(this, "Отправка сейчас недоступна", Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		if (!viewModel.isConnected) {
+			Toast.makeText(this, "Нет соединения с сервером, попробуйте позже", Toast.LENGTH_LONG).show();
+			return false;
+		}
+		return true;
 	}
 
 	private void showAddFileDialog() {
@@ -612,16 +623,11 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		}
 	}
 
-	private void sendMessage() {
+	private void sendTextMessage() {
 		String text = inputView.getText().toString().trim();
 
 		if (TextUtils.isEmpty(text)) {
 			Toast.makeText(this, "Введите сообщение", Toast.LENGTH_SHORT).show();
-			return;
-		}
-		// Duplicated check
-		if (!canSendMessage()) {
-			Toast.makeText(this, "Отправка сообщений сейчас недоступна", Toast.LENGTH_SHORT).show();
 			return;
 		}
 
