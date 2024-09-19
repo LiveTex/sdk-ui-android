@@ -315,12 +315,22 @@ public final class ChatViewModel extends ViewModel {
 		disposables.add(d);
 	}
 
-	void sendFeedback(boolean isPositive) {
+	void sendFeedback2points(boolean isPositive) {
 		Disposable d = Completable.fromAction(() -> messagesHandler.sendRatingEvent(isPositive))
 				.subscribeOn(Schedulers.io())
 				.observeOn(Schedulers.io())
 				.subscribe(Functions.EMPTY_ACTION, e -> {
-					Log.e(TAG, "sendFeedback", e);
+					Log.e(TAG, "sendFeedback2points", e);
+				});
+		disposables.add(d);
+	}
+
+	void sendFeedback5points(float rating) {
+		Disposable d = Completable.fromAction(() -> messagesHandler.sendRatingEvent((short) Math.round(rating)))
+				.subscribeOn(Schedulers.io())
+				.observeOn(Schedulers.io())
+				.subscribe(Functions.EMPTY_ACTION, e -> {
+					Log.e(TAG, "sendFeedback5points", e);
 				});
 		disposables.add(d);
 	}

@@ -35,8 +35,8 @@
 		android:id="@+id/messagesView"
 		android:layout_width="0dp"
 		android:layout_height="0dp"
-		android:scrollbarAlwaysDrawVerticalTrack="true"
 		android:fadeScrollbars="false"
+		android:scrollbarAlwaysDrawVerticalTrack="true"
 		android:scrollbars="vertical"
 		app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
 		app:layout_constraintBottom_toTopOf="@+id/bottomBarrier"
@@ -46,55 +46,245 @@
 		app:stackFromEnd="true"
 		tools:listitem="@layout/i_chat_message_in" />
 
-	<androidx.constraintlayout.widget.ConstraintLayout
+	<FrameLayout
 		android:id="@+id/feedbackContainerView"
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
-		android:background="#efefef"
-		android:padding="10dp"
+		android:background="#F3F4F6"
+		android:paddingHorizontal="16dp"
+		android:paddingVertical="8dp"
 		android:visibility="gone"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@id/toolbarView"
-		tools:visibility="visible">
+		tools:visibility="gone">
 
-		<TextView
-			android:layout_width="wrap_content"
+		<androidx.constraintlayout.widget.ConstraintLayout
+			android:id="@+id/feedback2pointsContainerView"
+			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:textColor="@color/textMain"
-			android:text="Оцените качество обслуживания"
-			app:layout_constraintBottom_toBottomOf="parent"
-			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintTop_toTopOf="parent" />
+			android:animateLayoutChanges="true"
+			android:clickable="true"
+			android:focusable="true"
+			android:visibility="gone"
+			tools:visibility="gone">
 
-		<ImageView
-			android:id="@+id/feedbackPositiveView"
-			android:layout_width="24dp"
-			android:layout_height="24dp"
-			android:layout_marginEnd="20dp"
-			android:background="?attr/selectableItemBackgroundBorderless"
-			android:src="@drawable/thumbup"
-			app:tint="@android:color/holo_green_dark"
-			app:layout_constraintEnd_toStartOf="@+id/feedbackNegativeView"
-			app:layout_constraintTop_toTopOf="parent" />
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:id="@+id/feedback2pointOuterContainerView"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:visibility="gone"
+				app:layout_constraintBottom_toBottomOf="parent"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toTopOf="parent"
+				tools:visibility="visible">
 
-		<ImageView
-			android:id="@+id/feedbackNegativeView"
-			android:layout_width="24dp"
-			android:layout_height="24dp"
-			android:background="?attr/selectableItemBackgroundBorderless"
-			android:src="@drawable/thumbdown"
-			app:tint="@android:color/holo_red_dark"
-			app:layout_constraintEnd_toEndOf="parent"
-			app:layout_constraintTop_toTopOf="parent" />
-	</androidx.constraintlayout.widget.ConstraintLayout>
+				<TextView
+					android:id="@+id/feedback2pointsLabelView"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="Оцените качество обслуживания"
+					android:textColor="#7E7979"
+					android:textSize="12sp"
+					app:layout_constraintBottom_toBottomOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toTopOf="parent" />
+
+				<ImageView
+					android:id="@+id/feedback2pointSmallPositiveView"
+					android:layout_width="22dp"
+					android:layout_height="20dp"
+					android:layout_marginEnd="20dp"
+					android:background="?attr/selectableItemBackgroundBorderless"
+					android:src="@drawable/thumbup"
+					app:layout_constraintEnd_toStartOf="@+id/feedback2pointSmallNegativeView"
+					app:layout_constraintTop_toTopOf="parent"
+					app:tint="#E5E6E8" />
+
+				<ImageView
+					android:id="@+id/feedback2pointSmallNegativeView"
+					android:layout_width="22dp"
+					android:layout_height="20dp"
+					android:background="?attr/selectableItemBackgroundBorderless"
+					android:src="@drawable/thumbdown"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintTop_toTopOf="parent"
+					app:tint="#E5E6E8" />
+			</androidx.constraintlayout.widget.ConstraintLayout>
+
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:id="@+id/feedback2pointInnerContainerView"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:paddingVertical="16dp"
+				android:visibility="gone"
+				app:layout_constraintBottom_toBottomOf="parent"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toTopOf="parent"
+				tools:visibility="gone">
+
+				<FrameLayout
+					android:id="@+id/helper1"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginEnd="52dp"
+					app:layout_constraintEnd_toStartOf="@+id/helper2"
+					app:layout_constraintHorizontal_chainStyle="packed"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toTopOf="parent">
+
+					<ImageView
+						android:id="@+id/feedback2pointLargePositiveView"
+						android:layout_width="50dp"
+						android:layout_height="45dp"
+						android:background="?attr/selectableItemBackgroundBorderless"
+						android:src="@drawable/thumbup"
+
+						app:tint="#E5E6E8" />
+				</FrameLayout>
+
+				<FrameLayout
+					android:id="@+id/helper2"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintHorizontal_chainStyle="packed"
+					app:layout_constraintStart_toEndOf="@+id/helper1"
+					app:layout_constraintTop_toTopOf="parent">
+
+					<ImageView
+						android:id="@+id/feedback2pointLargeNegativeView"
+						android:layout_width="50dp"
+						android:layout_height="45dp"
+						android:background="?attr/selectableItemBackgroundBorderless"
+						android:src="@drawable/thumbdown"
+						app:tint="#E5E6E8" />
+				</FrameLayout>
+
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/feedback2pointRateView"
+					style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="24dp"
+					android:backgroundTint="@color/bg_rate_button"
+					android:enabled="false"
+					android:text="Оценить"
+					android:textColor="@color/text_color_rate_button"
+					android:textSize="14sp"
+					app:cornerRadius="10dp"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@+id/helper1"
+					app:strokeColor="@color/bg_stroke_rate_button"
+					app:strokeWidth="1dp" />
+			</androidx.constraintlayout.widget.ConstraintLayout>
+
+		</androidx.constraintlayout.widget.ConstraintLayout>
+
+		<androidx.constraintlayout.widget.ConstraintLayout
+			android:id="@+id/feedback5pointsContainerView"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:animateLayoutChanges="true"
+			android:clickable="true"
+			android:focusable="true"
+			android:visibility="gone"
+			tools:visibility="gone">
+
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:id="@+id/feedback5pointOuterContainerView"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:visibility="gone"
+				app:layout_constraintBottom_toBottomOf="parent"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toTopOf="parent"
+				tools:visibility="gone">
+
+				<TextView
+					android:id="@+id/feedback5pointsLabelView"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="Оцените качество обслуживания"
+					android:textColor="#7E7979"
+					android:textSize="12sp"
+					app:layout_constraintBottom_toBottomOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toTopOf="parent" />
+
+				<per.wsj.library.AndRatingBar
+					android:id="@+id/feedback5pointSmallStarsView"
+					android:layout_width="0dp"
+					android:layout_height="20dp"
+					android:isIndicator="true"
+					android:numStars="5"
+					android:stepSize="1"
+					app:starColor="#FADB14"
+					app:starSpacing="4dp"
+					app:layout_constraintHorizontal_bias="1"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintTop_toTopOf="parent"
+					tools:rating="3" />
+			</androidx.constraintlayout.widget.ConstraintLayout>
+
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:id="@+id/feedback5pointInnerContainerView"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:paddingVertical="16dp"
+				android:visibility="gone"
+				app:layout_constraintBottom_toBottomOf="parent"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toTopOf="parent"
+				tools:visibility="gone">
+
+				<per.wsj.library.AndRatingBar
+					android:id="@+id/feedback5pointLargeStarsView"
+					android:layout_width="260dp"
+					android:layout_height="45dp"
+					android:isIndicator="false"
+					android:numStars="5"
+					android:stepSize="1"
+					app:starColor="#FADB14"
+					app:starSpacing="8dp"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintTop_toTopOf="parent"
+					tools:rating="3" />
+
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/feedback5pointRateView"
+					style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="24dp"
+					android:backgroundTint="@color/bg_rate_button"
+					android:enabled="false"
+					android:text="Оценить"
+					android:textColor="@color/text_color_rate_button"
+					android:textSize="14sp"
+					app:cornerRadius="10dp"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@+id/feedback5pointLargeStarsView"
+					app:strokeColor="@color/bg_stroke_rate_button"
+					app:strokeWidth="1dp" />
+			</androidx.constraintlayout.widget.ConstraintLayout>
+
+		</androidx.constraintlayout.widget.ConstraintLayout>
+	</FrameLayout>
 
 	<androidx.constraintlayout.widget.Barrier
 		android:id="@+id/bottomBarrier"
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
-		app:barrierDirection="top"
 		app:barrierAllowsGoneWidgets="true"
+		app:barrierDirection="top"
 		app:constraint_referenced_ids="inputContainerView,attributesContainerView,departmentsContainerView"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent" />
@@ -132,13 +322,13 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:background="#ffffff"
-					android:textColorHint="@color/colorHint"
-					android:textColor="#000000"
 					android:hint="Имя"
 					android:inputType="textPersonName"
 					android:maxLength="100"
 					android:padding="24dp"
-					android:singleLine="true" />
+					android:singleLine="true"
+					android:textColor="#000000"
+					android:textColorHint="@color/colorHint" />
 
 				<View
 					android:layout_width="match_parent"
@@ -150,13 +340,13 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:background="#ffffff"
-					android:textColorHint="@color/colorHint"
-					android:textColor="#000000"
 					android:hint="Телефон"
 					android:inputType="phone"
 					android:maxLength="100"
 					android:padding="24dp"
-					android:singleLine="true" />
+					android:singleLine="true"
+					android:textColor="#000000"
+					android:textColorHint="@color/colorHint" />
 
 				<View
 					android:layout_width="match_parent"
@@ -168,13 +358,13 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:background="#ffffff"
-					android:textColorHint="@color/colorHint"
-					android:textColor="#000000"
 					android:hint="E-mail"
 					android:inputType="textEmailAddress"
 					android:maxLength="100"
 					android:padding="24dp"
-					android:singleLine="true" />
+					android:singleLine="true"
+					android:textColor="#000000"
+					android:textColorHint="@color/colorHint" />
 			</LinearLayout>
 
 		</com.google.android.material.card.MaterialCardView>
@@ -246,9 +436,9 @@
 			android:paddingTop="5dp"
 			android:paddingBottom="5dp"
 			android:src="@drawable/plus"
-			app:tint="@color/add_enabled_disabled"
 			app:layout_constraintBottom_toBottomOf="@id/inputContainerView"
-			app:layout_constraintStart_toStartOf="parent" />
+			app:layout_constraintStart_toStartOf="parent"
+			app:tint="@color/add_enabled_disabled" />
 
 		<androidx.constraintlayout.widget.ConstraintLayout
 			android:id="@+id/inputFieldContainerView"
@@ -265,12 +455,12 @@
 				android:layout_width="80dp"
 				android:layout_height="92dp"
 				android:layout_marginStart="14dp"
-				android:paddingTop="12dp"
 				android:layout_marginBottom="6dp"
 				android:adjustViewBounds="true"
+				android:paddingTop="12dp"
 				android:visibility="gone"
-				app:layout_constraintStart_toStartOf="parent"
 				app:layout_constraintBottom_toTopOf="@id/inputView"
+				app:layout_constraintStart_toStartOf="parent"
 				tools:src="@drawable/logo"
 				tools:visibility="gone" />
 
@@ -280,8 +470,8 @@
 				android:layout_height="0dp"
 				android:layout_marginStart="6dp"
 				android:ellipsize="end"
-				android:textColor="@android:color/black"
 				android:paddingTop="6dp"
+				android:textColor="@android:color/black"
 				android:textSize="16sp"
 				android:visibility="gone"
 				app:layout_constraintBottom_toBottomOf="@+id/filePreviewView"
@@ -295,9 +485,9 @@
 				android:id="@+id/filePreviewDeleteView"
 				android:layout_width="32dp"
 				android:layout_height="32dp"
+				android:layout_marginTop="6dp"
 				android:clickable="true"
 				android:focusable="true"
-				android:layout_marginTop="6dp"
 				android:paddingStart="16dp"
 				android:paddingBottom="16dp"
 				android:src="@drawable/close_circled"
@@ -392,9 +582,9 @@
 			android:paddingTop="5dp"
 			android:paddingBottom="5dp"
 			android:src="@drawable/send"
-			app:tint="@color/control_enabled_disabled"
 			app:layout_constraintBottom_toBottomOf="@+id/inputContainerView"
-			app:layout_constraintEnd_toEndOf="parent" />
+			app:layout_constraintEnd_toEndOf="parent"
+			app:tint="@color/control_enabled_disabled" />
 	</androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

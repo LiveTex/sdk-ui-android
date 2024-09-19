@@ -4,6 +4,7 @@
 	<dimen name="chat_upload_preview_corner_radius">10dp</dimen>
 	<dimen name="chat_message_file_icon_padding">6dp</dimen>
 	<dimen name="chat_message_indicator_size">14dp</dimen>
+	<dimen name="chat_screen_rating_panel_expanded_height">134dp</dimen>
 
 	<dimen name="chat_message_link_preview_width">200dp</dimen>
 	<dimen name="chat_message_link_preview_height">100dp</dimen>
