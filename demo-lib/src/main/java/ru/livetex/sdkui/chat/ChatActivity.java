@@ -1,6 +1,7 @@
 package ru.livetex.sdkui.chat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -37,7 +38,6 @@ import com.yalantis.ucrop.UCrop;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -238,6 +238,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		viewModel.dialogStateUpdateLiveData.observe(this, this::updateDialogState);
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	private void setupUI() {
 		setupInput();
 
@@ -320,6 +321,18 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			}
 		});
 
+		messagesView.setOnTouchListener((v, event) -> {
+			// collapse any expanded rating containers
+			boolean isExpanded2p = binding.feedback2pointsContainerView.getTag() != null;
+			boolean isExpanded5p = binding.feedback5pointsContainerView.getTag() != null;
+			if (isExpanded2p) {
+				binding.feedback2pointsContainerView.callOnClick();
+			} else if (isExpanded5p) {
+				binding.feedback5pointsContainerView.callOnClick();
+			}
+			return false;
+		});
+
 		quoteCloseView.setOnClickListener(v -> {
 			viewModel.setQuoteText(null);
 		});
@@ -347,6 +360,15 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 					binding.feedback2pointInnerContainerView.setVisibility(View.GONE);
 					binding.feedback2pointOuterContainerView.setVisibility(View.VISIBLE);
+
+					// clear state
+					int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
+					binding.feedback2pointLargeNegativeView.setTag(null);
+					binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+					binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+					binding.feedback2pointLargePositiveView.setTag(null);
+					binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+					binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
 				}
 			}, 0);
 		};
@@ -357,31 +379,22 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		binding.feedback2pointSmallNegativeView.setOnClickListener(feedback2pointContainerClickListener);
 
 		View.OnClickListener setFeedbackClickListener = v -> {
-			int inactiveColor = Color.parseColor("#E5E6E8");
 			if (v.getId() == binding.feedback2pointLargePositiveView.getId()) {
 				binding.feedback2pointLargePositiveView.setTag(true);
 				binding.feedback2pointLargeNegativeView.setTag(null);
 
 				binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(
-						ContextCompat.getColor(this, android.R.color.holo_green_dark)
+						RatingConst.COLOR_POSITIVE_THUMB
 				));
-				binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-				binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
-						ContextCompat.getColor(this, android.R.color.holo_green_dark)
-				));
-				binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+				binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(RatingConst.COLOR_INACTIVE_THUMB));
 			} else {
 				binding.feedback2pointLargePositiveView.setTag(null);
 				binding.feedback2pointLargeNegativeView.setTag(true);
 
 				binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(
-						ContextCompat.getColor(this, android.R.color.holo_red_dark)
+						RatingConst.COLOR_NEGATIVE_THUMB
 				));
-				binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-				binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
-						ContextCompat.getColor(this, android.R.color.holo_red_dark)
-				));
-				binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+				binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(RatingConst.COLOR_INACTIVE_THUMB));
 			}
 
 			binding.feedback2pointRateView.setEnabled(true);
@@ -399,7 +412,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			if (viewModel.isConnected) {
 				viewModel.sendFeedback2points(binding.feedback2pointLargePositiveView.getTag() != null);
 				// collapse container
-				feedback2pointContainerClickListener.onClick(binding.feedback2pointsContainerView);
+				binding.feedback2pointsContainerView.callOnClick();
 			} else {
 				Toast.makeText(this, "Нет соединения с сервером", Toast.LENGTH_SHORT).show();
 			}
@@ -409,7 +422,6 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 	}
 
 	private void setup5pointsRatingUI() {
-
 		// It allows expand/collapse the feedback container
 		View.OnClickListener feedback5pointContainerClickListener = v -> {
 			boolean isExpanded = binding.feedback5pointsContainerView.getTag() != null;
@@ -428,6 +440,9 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 					binding.feedback5pointInnerContainerView.setVisibility(View.GONE);
 					binding.feedback5pointOuterContainerView.setVisibility(View.VISIBLE);
+
+					// clear state
+					binding.feedback5pointLargeStarsView.setRating(0.0f);
 				}
 			}, 0);
 		};
@@ -438,7 +453,6 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 		binding.feedback5pointLargeStarsView.setOnRatingChangeListener((ratingBar, rating, fromUser) -> {
 			binding.feedback5pointRateView.setEnabled(rating >= 1.0f);
-			binding.feedback5pointSmallStarsView.setRating(rating);
 		});
 
 		View.OnClickListener sendFeedbackClickListener = v -> {
@@ -790,13 +804,29 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 						if (dialogState.rate.isSet.value.equals("1")) {
 							// positive
-							binding.feedback2pointLargePositiveView.callOnClick();
+							binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_POSITIVE_THUMB
+							));
+							binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_INACTIVE_THUMB
+							));
 						} else {
 							// negative
-							binding.feedback2pointLargeNegativeView.callOnClick();
+							binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_INACTIVE_THUMB
+							));
+							binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_NEGATIVE_THUMB
+							));
 						}
 					} else if (dialogState.rate.isSet.type == DialogRatingType.FIVE_POINT) {
-						// rating system doesn't fit - don't display rating
+						// rating system doesn't fit - don't display non-fit rating
+						binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
+								RatingConst.COLOR_INACTIVE_THUMB
+						));
+						binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
+								RatingConst.COLOR_INACTIVE_THUMB
+						));
 					}
 				} else {
 					// do nothing?
@@ -818,12 +848,13 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 						// rating system fits - display rating and DON"T disable ability to change rating
 
 						try {
-							binding.feedback5pointLargeStarsView.setRating(Float.parseFloat(dialogState.rate.isSet.value));
+							binding.feedback5pointSmallStarsView.setRating(Float.parseFloat(dialogState.rate.isSet.value));
 						} catch (Exception e) {
 							Log.e(TAG, "error when parsing dialogState.rate.isSet.value", e);
 						}
 					} else if (dialogState.rate.isSet.type == DialogRatingType.DOUBLE_POINT) {
-						// rating system doesn't fit - don't display rating
+						// rating system doesn't fit - don't display non-fit rating
+						binding.feedback5pointSmallStarsView.setRating(0.0f);
 					}
 				} else {
 					// do nothing?
@@ -832,13 +863,12 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		} else {
 			// clear possible user state
 			binding.feedback5pointLargeStarsView.setRating(0.0f);
+			binding.feedback5pointSmallStarsView.setRating(0.0f);
 
-			int inactiveColor = Color.parseColor("#E5E6E8");
-			binding.feedback2pointSmallNegativeView.setTag(null);
+			int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
 			binding.feedback2pointLargeNegativeView.setTag(null);
 			binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
 			binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-			binding.feedback2pointSmallPositiveView.setTag(null);
 			binding.feedback2pointLargePositiveView.setTag(null);
 			binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
 			binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
@@ -875,5 +905,11 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			return;
 		}
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+	}
+
+	static final class RatingConst {
+		final static int COLOR_INACTIVE_THUMB = Color.parseColor("#E5E6E8");
+		final static int COLOR_POSITIVE_THUMB = Color.parseColor("#10C257");
+		final static int COLOR_NEGATIVE_THUMB = Color.parseColor("#F02020");
 	}
 }
