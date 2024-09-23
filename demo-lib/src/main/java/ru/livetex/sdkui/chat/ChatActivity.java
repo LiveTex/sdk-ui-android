@@ -437,7 +437,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		binding.feedback5pointSmallStarsView.setOnClickListener(feedback5pointContainerClickListener);
 
 		binding.feedback5pointLargeStarsView.setOnRatingChangeListener((ratingBar, rating, fromUser) -> {
-			binding.feedback5pointRateView.setEnabled(true);
+			binding.feedback5pointRateView.setEnabled(rating >= 1.0f);
 			binding.feedback5pointSmallStarsView.setRating(rating);
 		});
 
@@ -765,14 +765,23 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		binding.feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
 
 		if (shouldShowFeedback) {
-			// clear state
+			// clear state and try to preserve user state
 			binding.feedback2pointsContainerView.setVisibility(View.GONE);
-			binding.feedback2pointRateView.setEnabled(false);
+			boolean userSet2points = binding.feedback2pointLargePositiveView.getTag() != null || binding.feedback2pointLargeNegativeView.getTag() != null;
+			binding.feedback2pointRateView.setEnabled(userSet2points);
 			binding.feedback5pointsContainerView.setVisibility(View.GONE);
-			binding.feedback5pointRateView.setEnabled(false);
+			boolean userSet5points = binding.feedback5pointLargeStarsView.getRating() > 0.0f;
+			binding.feedback5pointRateView.setEnabled(userSet5points);
 
 			if (dialogState.rate.enabledType == DialogRatingType.DOUBLE_POINT) {
 				binding.feedback2pointsContainerView.setVisibility(View.VISIBLE);
+
+				// try to preserve user state, if any
+				if (binding.feedback2pointOuterContainerView.getVisibility() == View.GONE &&
+						binding.feedback2pointInnerContainerView.getVisibility() == View.GONE) {
+					// was hidden - show small
+					binding.feedback2pointOuterContainerView.setVisibility(View.VISIBLE);
+				}
 
 				if (dialogState.rate.isSet != null) {
 					// something is already set
@@ -795,6 +804,14 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			} else if (dialogState.rate.enabledType == DialogRatingType.FIVE_POINT) {
 				binding.feedback5pointsContainerView.setVisibility(View.VISIBLE);
 
+				// try to preserve user state, if any
+				if (binding.feedback5pointOuterContainerView.getVisibility() == View.GONE &&
+						binding.feedback5pointInnerContainerView.getVisibility() == View.GONE) {
+					// was hidden - show small
+					binding.feedback5pointOuterContainerView.setVisibility(View.VISIBLE);
+				}
+
+
 				if (dialogState.rate.isSet != null) {
 					// something is already set
 					if (dialogState.rate.isSet.type == DialogRatingType.FIVE_POINT) {
@@ -812,6 +829,19 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 					// do nothing?
 				}
 			}
+		} else {
+			// clear possible user state
+			binding.feedback5pointLargeStarsView.setRating(0.0f);
+
+			int inactiveColor = Color.parseColor("#E5E6E8");
+			binding.feedback2pointSmallNegativeView.setTag(null);
+			binding.feedback2pointLargeNegativeView.setTag(null);
+			binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointSmallPositiveView.setTag(null);
+			binding.feedback2pointLargePositiveView.setTag(null);
+			binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
 		}
 
 		// Don't use showInput from DialogState, see ChatViewState
