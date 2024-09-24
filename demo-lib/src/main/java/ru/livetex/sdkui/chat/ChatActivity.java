@@ -1,12 +1,15 @@
 package ru.livetex.sdkui.chat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -50,6 +53,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import ru.livetex.sdk.entity.Department;
+import ru.livetex.sdk.entity.DialogRatingType;
 import ru.livetex.sdk.entity.DialogState;
 import ru.livetex.sdk.network.NetworkManager;
 import ru.livetex.sdkui.Const;
@@ -65,6 +69,7 @@ import ru.livetex.sdkui.chat.db.ChatState;
 import ru.livetex.sdkui.chat.db.entity.ChatMessage;
 import ru.livetex.sdkui.chat.db.entity.MessageSentState;
 import ru.livetex.sdkui.chat.image.ImageActivity;
+import ru.livetex.sdkui.databinding.AChatBinding;
 import ru.livetex.sdkui.utils.DateUtils;
 import ru.livetex.sdkui.utils.FileUtils;
 import ru.livetex.sdkui.utils.InputUtils;
@@ -76,7 +81,6 @@ import ru.livetex.sdkui.utils.picker.LivetexPickerHandler;
 
 public class ChatActivity extends AppCompatActivity implements LivetexPickerHandler {
 	private static final String TAG = "MainActivity";
-	private static final int REQUEST_CODE_STORAGE = 2000;
 
 	private final CompositeDisposable disposables = new CompositeDisposable();
 	private ChatViewModel viewModel;
@@ -85,6 +89,8 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 	private final static long TEXT_TYPING_DELAY = 500L; // milliseconds
 	private final PublishSubject<String> textSubject = PublishSubject.create();
+
+	private AChatBinding binding;
 
 	private EditText inputView;
 	private ImageView addView;
@@ -95,9 +101,6 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 	private ViewGroup attributesContainerView;
 	private ViewGroup departmentsContainerView;
 	private ViewGroup departmentsButtonContainerView;
-	private ViewGroup feedbackContainerView;
-	private ImageView feedbackPositiveView;
-	private ImageView feedbackNegativeView;
 	private View attributesSendView;
 	private EditText attributesNameView;
 	private EditText attributesPhoneView;
@@ -122,34 +125,15 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		}
 	};
 
-//	private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
-//			registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
-//				// Callback is invoked after the user selects a media item or closes the
-//				// photo picker.
-//				if (uri != null) {
-//					Disposable d = Single
-//							.fromCallable(() -> FileUtils.getPath(this, uri))
-//							.subscribeOn(Schedulers.io())
-//							.observeOn(AndroidSchedulers.mainThread())
-//							.subscribe(path -> {
-//								Uri newUri = Uri.fromFile(new File(path));
-//								if (!FileUtils.getMimeType(this, newUri).contains("video")) {
-//									addFileDialog.crop(this, newUri);
-//								} else {
-//									onFileSelected(newUri);
-//								}
-//							}, thr -> Log.e(TAG, "SELECT_IMAGE_OR_VIDEO", thr));
-//				} else {
-//					closeFileDialog();
-//				}
-//			});
-
-	private LivetexPicker picker = new LivetexPicker(this, this);
+	private final LivetexPicker picker = new LivetexPicker(this, this);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.a_chat);
+
+		binding = AChatBinding.inflate(getLayoutInflater());
+		View view = binding.getRoot();
+		setContentView(view);
 
 		inputView = findViewById(R.id.inputView);
 		sendView = findViewById(R.id.sendView);
@@ -160,9 +144,6 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		attributesContainerView = findViewById(R.id.attributesContainerView);
 		departmentsContainerView = findViewById(R.id.departmentsContainerView);
 		departmentsButtonContainerView = findViewById(R.id.departmentsButtonContainerView);
-		feedbackContainerView = findViewById(R.id.feedbackContainerView);
-		feedbackPositiveView = findViewById(R.id.feedbackPositiveView);
-		feedbackNegativeView = findViewById(R.id.feedbackNegativeView);
 		attributesSendView = findViewById(R.id.attributesSendView);
 		attributesNameView = findViewById(R.id.attributesNameView);
 		attributesPhoneView = findViewById(R.id.attributesPhoneView);
@@ -257,6 +238,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		viewModel.dialogStateUpdateLiveData.observe(this, this::updateDialogState);
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	private void setupUI() {
 		setupInput();
 
@@ -339,16 +321,156 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			}
 		});
 
-		View.OnClickListener feedbackClickListener = v -> {
-			feedbackContainerView.postDelayed(() -> feedbackContainerView.setVisibility(View.GONE), 250);
-			viewModel.sendFeedback(v.getId() == R.id.feedbackPositiveView);
-		};
-		feedbackPositiveView.setOnClickListener(feedbackClickListener);
-		feedbackNegativeView.setOnClickListener(feedbackClickListener);
+		messagesView.setOnTouchListener((v, event) -> {
+			// collapse any expanded rating containers
+			boolean isExpanded2p = binding.feedback2pointsContainerView.getTag() != null;
+			boolean isExpanded5p = binding.feedback5pointsContainerView.getTag() != null;
+			if (isExpanded2p) {
+				binding.feedback2pointsContainerView.callOnClick();
+			} else if (isExpanded5p) {
+				binding.feedback5pointsContainerView.callOnClick();
+			}
+			return false;
+		});
 
 		quoteCloseView.setOnClickListener(v -> {
 			viewModel.setQuoteText(null);
 		});
+
+		setup2pointsRatingUI();
+		setup5pointsRatingUI();
+	}
+
+	private void setup2pointsRatingUI() {
+		// It allows expand/collapse the feedback container
+		View.OnClickListener feedback2pointContainerClickListener = v -> {
+			boolean isExpanded = binding.feedback2pointsContainerView.getTag() != null;
+
+			binding.feedback2pointsContainerView.postDelayed(() ->
+			{
+				if (!isExpanded) {
+					// hide small elements, show big elements
+					binding.feedback2pointsContainerView.setTag(true);
+
+					binding.feedback2pointOuterContainerView.setVisibility(View.GONE);
+					binding.feedback2pointInnerContainerView.setVisibility(View.VISIBLE);
+				} else {
+					// show small elements, hide big elements
+					binding.feedback2pointsContainerView.setTag(null);
+
+					binding.feedback2pointInnerContainerView.setVisibility(View.GONE);
+					binding.feedback2pointOuterContainerView.setVisibility(View.VISIBLE);
+
+					// clear state
+					int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
+					binding.feedback2pointLargeNegativeView.setTag(null);
+					binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+					binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+					binding.feedback2pointLargePositiveView.setTag(null);
+					binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+					binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+				}
+			}, 0);
+		};
+
+		binding.feedback2pointsContainerView.setOnClickListener(feedback2pointContainerClickListener);
+		binding.feedback2pointOuterContainerView.setOnClickListener(feedback2pointContainerClickListener);
+		binding.feedback2pointSmallPositiveView.setOnClickListener(feedback2pointContainerClickListener);
+		binding.feedback2pointSmallNegativeView.setOnClickListener(feedback2pointContainerClickListener);
+
+		View.OnClickListener setFeedbackClickListener = v -> {
+			if (v.getId() == binding.feedback2pointLargePositiveView.getId()) {
+				binding.feedback2pointLargePositiveView.setTag(true);
+				binding.feedback2pointLargeNegativeView.setTag(null);
+
+				binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(
+						RatingConst.COLOR_POSITIVE_THUMB
+				));
+				binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(RatingConst.COLOR_INACTIVE_THUMB));
+			} else {
+				binding.feedback2pointLargePositiveView.setTag(null);
+				binding.feedback2pointLargeNegativeView.setTag(true);
+
+				binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(
+						RatingConst.COLOR_NEGATIVE_THUMB
+				));
+				binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(RatingConst.COLOR_INACTIVE_THUMB));
+			}
+
+			binding.feedback2pointRateView.setEnabled(true);
+		};
+
+		binding.feedback2pointLargePositiveView.setOnClickListener(setFeedbackClickListener);
+		binding.feedback2pointLargeNegativeView.setOnClickListener(setFeedbackClickListener);
+
+		View.OnClickListener sendFeedbackClickListener = v -> {
+			if (binding.feedback2pointLargePositiveView.getTag() == null && binding.feedback2pointLargeNegativeView.getTag() == null) {
+				Toast.makeText(this, "Выберите оценку", Toast.LENGTH_SHORT).show();
+				return;
+			}
+
+			if (viewModel.isConnected) {
+				viewModel.sendFeedback2points(binding.feedback2pointLargePositiveView.getTag() != null);
+				// collapse container
+				binding.feedback2pointsContainerView.callOnClick();
+			} else {
+				Toast.makeText(this, "Нет соединения с сервером", Toast.LENGTH_SHORT).show();
+			}
+		};
+
+		binding.feedback2pointRateView.setOnClickListener(sendFeedbackClickListener);
+	}
+
+	private void setup5pointsRatingUI() {
+		// It allows expand/collapse the feedback container
+		View.OnClickListener feedback5pointContainerClickListener = v -> {
+			boolean isExpanded = binding.feedback5pointsContainerView.getTag() != null;
+
+			binding.feedback5pointsContainerView.postDelayed(() ->
+			{
+				if (!isExpanded) {
+					// hide small elements, show big elements
+					binding.feedback5pointsContainerView.setTag(true);
+
+					binding.feedback5pointOuterContainerView.setVisibility(View.GONE);
+					binding.feedback5pointInnerContainerView.setVisibility(View.VISIBLE);
+				} else {
+					// show small elements, hide big elements
+					binding.feedback5pointsContainerView.setTag(null);
+
+					binding.feedback5pointInnerContainerView.setVisibility(View.GONE);
+					binding.feedback5pointOuterContainerView.setVisibility(View.VISIBLE);
+
+					// clear state
+					binding.feedback5pointLargeStarsView.setRating(0.0f);
+				}
+			}, 0);
+		};
+
+		binding.feedback5pointsContainerView.setOnClickListener(feedback5pointContainerClickListener);
+		binding.feedback5pointOuterContainerView.setOnClickListener(feedback5pointContainerClickListener);
+		binding.feedback5pointSmallStarsView.setOnClickListener(feedback5pointContainerClickListener);
+
+		binding.feedback5pointLargeStarsView.setOnRatingChangeListener((ratingBar, rating, fromUser) -> {
+			binding.feedback5pointRateView.setEnabled(rating >= 1.0f);
+		});
+
+		View.OnClickListener sendFeedbackClickListener = v -> {
+			if (binding.feedback5pointLargeStarsView.getRating() < 1.0f) {
+				Toast.makeText(this, "Поставьте оценку", Toast.LENGTH_SHORT).show();
+				return;
+			}
+
+			if (viewModel.isConnected) {
+				viewModel.sendFeedback5points(binding.feedback5pointLargeStarsView.getRating());
+				// collapse container
+				feedback5pointContainerClickListener.onClick(binding.feedback2pointsContainerView);
+			} else {
+				Toast.makeText(this, "Нет соединения с сервером", Toast.LENGTH_SHORT).show();
+			}
+		};
+
+		binding.feedback5pointRateView.setOnClickListener(sendFeedbackClickListener);
 	}
 
 	private void setMessages(List<ChatMessage> chatMessages) {
@@ -652,8 +774,107 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 	 * Here you can use dialog status and employee data
 	 */
 	private void updateDialogState(DialogState dialogState) {
-		boolean shouldShowFeedback = dialogState.employee != null && dialogState.employee.rating == null;
-		feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
+		boolean shouldShowFeedback = dialogState.status != DialogState.DialogStatus.QUEUE &&
+				dialogState.status != DialogState.DialogStatus.UNASSIGNED
+				&& dialogState.rate != null && dialogState.rate.enabledType != null;
+		binding.feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
+
+		if (shouldShowFeedback) {
+			// clear state and try to preserve user state
+			binding.feedback2pointsContainerView.setVisibility(View.GONE);
+			boolean userSet2points = binding.feedback2pointLargePositiveView.getTag() != null || binding.feedback2pointLargeNegativeView.getTag() != null;
+			binding.feedback2pointRateView.setEnabled(userSet2points);
+			binding.feedback5pointsContainerView.setVisibility(View.GONE);
+			boolean userSet5points = binding.feedback5pointLargeStarsView.getRating() > 0.0f;
+			binding.feedback5pointRateView.setEnabled(userSet5points);
+
+			if (dialogState.rate.enabledType == DialogRatingType.DOUBLE_POINT) {
+				binding.feedback2pointsContainerView.setVisibility(View.VISIBLE);
+
+				// try to preserve user state, if any
+				if (binding.feedback2pointOuterContainerView.getVisibility() == View.GONE &&
+						binding.feedback2pointInnerContainerView.getVisibility() == View.GONE) {
+					// was hidden - show small
+					binding.feedback2pointOuterContainerView.setVisibility(View.VISIBLE);
+				}
+
+				if (dialogState.rate.isSet != null) {
+					// something is already set
+					if (dialogState.rate.isSet.type == DialogRatingType.DOUBLE_POINT) {
+						// rating system fits - display rating and DON"T disable ability to change rating
+
+						if (dialogState.rate.isSet.value.equals("1")) {
+							// positive
+							binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_POSITIVE_THUMB
+							));
+							binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_INACTIVE_THUMB
+							));
+						} else {
+							// negative
+							binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_INACTIVE_THUMB
+							));
+							binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
+									RatingConst.COLOR_NEGATIVE_THUMB
+							));
+						}
+					} else if (dialogState.rate.isSet.type == DialogRatingType.FIVE_POINT) {
+						// rating system doesn't fit - don't display non-fit rating
+						binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
+								RatingConst.COLOR_INACTIVE_THUMB
+						));
+						binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
+								RatingConst.COLOR_INACTIVE_THUMB
+						));
+					}
+				} else {
+					// do nothing?
+				}
+			} else if (dialogState.rate.enabledType == DialogRatingType.FIVE_POINT) {
+				binding.feedback5pointsContainerView.setVisibility(View.VISIBLE);
+
+				// try to preserve user state, if any
+				if (binding.feedback5pointOuterContainerView.getVisibility() == View.GONE &&
+						binding.feedback5pointInnerContainerView.getVisibility() == View.GONE) {
+					// was hidden - show small
+					binding.feedback5pointOuterContainerView.setVisibility(View.VISIBLE);
+				}
+
+
+				if (dialogState.rate.isSet != null) {
+					// something is already set
+					if (dialogState.rate.isSet.type == DialogRatingType.FIVE_POINT) {
+						// rating system fits - display rating and DON"T disable ability to change rating
+
+						try {
+							binding.feedback5pointSmallStarsView.setRating(Float.parseFloat(dialogState.rate.isSet.value));
+						} catch (Exception e) {
+							Log.e(TAG, "error when parsing dialogState.rate.isSet.value", e);
+						}
+					} else if (dialogState.rate.isSet.type == DialogRatingType.DOUBLE_POINT) {
+						// rating system doesn't fit - don't display non-fit rating
+						binding.feedback5pointSmallStarsView.setRating(0.0f);
+					}
+				} else {
+					// do nothing?
+				}
+			}
+		} else {
+			// clear possible user state
+			binding.feedback5pointLargeStarsView.setRating(0.0f);
+			binding.feedback5pointSmallStarsView.setRating(0.0f);
+
+			int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
+			binding.feedback2pointLargeNegativeView.setTag(null);
+			binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargePositiveView.setTag(null);
+			binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+		}
+
 		// Don't use showInput from DialogState, see ChatViewState
 	}
 
@@ -685,5 +906,11 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			return;
 		}
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+	}
+
+	static final class RatingConst {
+		final static int COLOR_INACTIVE_THUMB = Color.parseColor("#E5E6E8");
+		final static int COLOR_POSITIVE_THUMB = Color.parseColor("#10C257");
+		final static int COLOR_NEGATIVE_THUMB = Color.parseColor("#F02020");
 	}
 }
