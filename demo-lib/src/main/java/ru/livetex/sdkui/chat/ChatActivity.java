@@ -774,7 +774,8 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 	 * Here you can use dialog status and employee data
 	 */
 	private void updateDialogState(DialogState dialogState) {
-		boolean shouldShowFeedback = dialogState.employee != null && dialogState.status != DialogState.DialogStatus.BOT
+		boolean shouldShowFeedback = dialogState.status != DialogState.DialogStatus.QUEUE &&
+				dialogState.status != DialogState.DialogStatus.UNASSIGNED
 				&& dialogState.rate != null && dialogState.rate.enabledType != null;
 		binding.feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
 
