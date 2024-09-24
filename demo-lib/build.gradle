@@ -49,13 +49,12 @@ android {
 }
 
 dependencies {
-	def lifecycle_version = "2.8.5"
+	def lifecycle_version = "2.8.6"
 
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	
 	// LiveTex
-	//api 'com.github.LiveTex:sdk-android:1.3.3'
-	api 'com.github.LiveTex:sdk-android:new_rating_system-SNAPSHOT'
+	api 'com.github.LiveTex:sdk-android:1.4'
 
 	// androidx, ui
 	implementation 'androidx.appcompat:appcompat:1.7.0'
