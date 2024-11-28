@@ -123,7 +123,7 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 			case VIEW_TYPE_RATING_2:
 				view = LayoutInflater.from(parent.getContext())
 						.inflate(R.layout.i_rating_2, parent, false);
-				return new Rating5Holder(view);
+				return new Rating2Holder(view);
 		}
 		return null;
 	}
