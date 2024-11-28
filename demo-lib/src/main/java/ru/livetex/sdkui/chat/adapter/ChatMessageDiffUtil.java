@@ -39,6 +39,9 @@ public final class ChatMessageDiffUtil extends DiffUtil.Callback {
 				case EMPLOYEE_TYPING:
 					// shouldn't happen
 					return true;
+				case RATING:
+					// shouldn't happen
+					return true;
 			}
 		} else {
 			return false;

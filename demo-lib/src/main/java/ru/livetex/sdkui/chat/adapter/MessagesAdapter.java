@@ -1,14 +1,17 @@
 package ru.livetex.sdkui.chat.adapter;
 
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,11 +35,15 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.functions.Consumer;
+import per.wsj.library.AndRatingBar;
+import ru.livetex.sdk.entity.DialogRatingType;
 import ru.livetex.sdk.entity.Employee;
 import ru.livetex.sdk.entity.KeyboardEntity;
 import ru.livetex.sdkui.R;
+import ru.livetex.sdkui.chat.RatingConst;
 import ru.livetex.sdkui.chat.db.ChatState;
 import ru.livetex.sdkui.utils.DateUtils;
+import ru.livetex.sdkui.utils.TextWatcherAdapter;
 
 public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.BaseMessageHolder> {
 	private static final String TAG = "MessagesAdapter";
@@ -49,11 +56,15 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 	private static final int VIEW_TYPE_SYSTEM_MESSAGE = 7;
 	private static final int VIEW_TYPE_DATE = 8;
 	private static final int VIEW_TYPE_EMPLOYEE_TYPING = 9;
+	private static final int VIEW_TYPE_RATING_2 = 10;
+	private static final int VIEW_TYPE_RATING_5 = 11;
 
 	private final List<AdapterItem> items = new ArrayList<>();
 	private int messagesCount = 0;
 	@Nullable
 	private Consumer<ChatItem> onMessageClickListener = null;
+	@Nullable
+	private Consumer<RatingItem> onRatingItemSendClickListener = null;
 	@Nullable
 	private Consumer<String> onFileClickListener = null;
 	@NonNull
@@ -105,21 +116,29 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 				view = LayoutInflater.from(parent.getContext())
 						.inflate(R.layout.i_chat_message_in, parent, false);
 				return new IncomingTypingMessageHolder(view);
+			case VIEW_TYPE_RATING_5:
+				view = LayoutInflater.from(parent.getContext())
+						.inflate(R.layout.i_rating_5, parent, false);
+				return new Rating5Holder(view);
+			case VIEW_TYPE_RATING_2:
+				view = LayoutInflater.from(parent.getContext())
+						.inflate(R.layout.i_rating_2, parent, false);
+				return new Rating5Holder(view);
 		}
 		return null;
 	}
 
 	@Override
 	public void onBindViewHolder(@NonNull BaseMessageHolder holder, int position) {
-		final AdapterItem message = items.get(position);
+		final AdapterItem adapterItem = items.get(position);
 
 		View.OnClickListener menuClickListener = null;
 		if (onMessageClickListener != null &&
-				message.getAdapterItemType() == ItemType.CHAT_MESSAGE &&
+				adapterItem.getAdapterItemType() == ItemType.CHAT_MESSAGE &&
 				holder.getClickableAreaView() != null) {
 			menuClickListener = v -> {
 				try {
-					onMessageClickListener.accept((ChatItem) message);
+					onMessageClickListener.accept((ChatItem) adapterItem);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -128,31 +147,37 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 
 		switch (holder.getItemViewType()) {
 			case VIEW_TYPE_MESSAGE_INCOMING:
-				((IncomingMessageHolder) holder).bind((ChatItem) message, onActionButtonClickListener, menuClickListener);
+				((IncomingMessageHolder) holder).bind((ChatItem) adapterItem, onActionButtonClickListener, menuClickListener);
 				break;
 			case VIEW_TYPE_MESSAGE_OUTGOING:
-				((OutgoingMessageHolder) holder).bind((ChatItem) message, menuClickListener);
+				((OutgoingMessageHolder) holder).bind((ChatItem) adapterItem, menuClickListener);
 				break;
 			case VIEW_TYPE_IMAGE_INCOMING:
-				((IncomingImageHolder) holder).bind((ChatItem) message, onFileClickListener);
+				((IncomingImageHolder) holder).bind((ChatItem) adapterItem, onFileClickListener);
 				break;
 			case VIEW_TYPE_IMAGE_OUTGOING:
-				((OutgoingImageHolder) holder).bind((ChatItem) message, onFileClickListener);
+				((OutgoingImageHolder) holder).bind((ChatItem) adapterItem, onFileClickListener);
 				break;
 			case VIEW_TYPE_FILE_INCOMING:
-				((IncomingFileHolder) holder).bind((ChatItem) message, onFileClickListener);
+				((IncomingFileHolder) holder).bind((ChatItem) adapterItem, onFileClickListener);
 				break;
 			case VIEW_TYPE_FILE_OUTGOING:
-				((OutgoingFileHolder) holder).bind((ChatItem) message, onFileClickListener);
+				((OutgoingFileHolder) holder).bind((ChatItem) adapterItem, onFileClickListener);
 				break;
 			case VIEW_TYPE_SYSTEM_MESSAGE:
-				((SystemMessageHolder) holder).bind((ChatItem) message);
+				((SystemMessageHolder) holder).bind((ChatItem) adapterItem);
 				break;
 			case VIEW_TYPE_DATE:
-				((DateHolder) holder).bind((DateItem) message);
+				((DateHolder) holder).bind((DateItem) adapterItem);
 				break;
 			case VIEW_TYPE_EMPLOYEE_TYPING:
-				((IncomingTypingMessageHolder) holder).bind((EmployeeTypingItem) message);
+				((IncomingTypingMessageHolder) holder).bind((EmployeeTypingItem) adapterItem);
+				break;
+			case VIEW_TYPE_RATING_5:
+				((Rating5Holder) holder).bind((RatingItem) adapterItem, onRatingItemSendClickListener);
+				break;
+			case VIEW_TYPE_RATING_2:
+				((Rating2Holder) holder).bind((RatingItem) adapterItem, onRatingItemSendClickListener);
 				break;
 		}
 
@@ -204,6 +229,14 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 				return VIEW_TYPE_DATE;
 			case EMPLOYEE_TYPING:
 				return VIEW_TYPE_EMPLOYEE_TYPING;
+			case RATING: {
+				RatingItem ratingItem = (RatingItem) item;
+				if (ratingItem.type == DialogRatingType.FIVE_POINT) {
+					return VIEW_TYPE_RATING_5;
+				} else {
+					return VIEW_TYPE_RATING_2;
+				}
+			}
 		}
 
 		return -1;
@@ -240,6 +273,10 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 
 	public void setOnFileClickListener(@NonNull Consumer<String> onFileClickListener) {
 		this.onFileClickListener = onFileClickListener;
+	}
+
+	public void setOnRatingItemSendClickListener(@Nullable Consumer<RatingItem> onRatingItemSendClickListener) {
+		this.onRatingItemSendClickListener = onRatingItemSendClickListener;
 	}
 
 	private static class IncomingMessageHolder extends BaseMessageHolder {
@@ -496,6 +533,205 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 
 		void bind(DateItem message) {
 			messageView.setText(message.text);
+		}
+	}
+
+	private static class Rating5Holder extends BaseMessageHolder {
+		TextView beforeTextView;
+		TextView afterTextView;
+		AndRatingBar ratingView;
+		AndRatingBar ratingSmallView;
+		EditText commentView;
+		TextView commentTextView;
+		View sendView;
+		View rootView;
+
+		Rating5Holder(View itemView) {
+			super(itemView);
+
+			rootView = itemView.findViewById(R.id.rootView);
+			beforeTextView = itemView.findViewById(R.id.beforeText);
+			afterTextView = itemView.findViewById(R.id.afterText);
+			ratingView = itemView.findViewById(R.id.rating);
+			ratingSmallView = itemView.findViewById(R.id.ratingSmall);
+			commentView = itemView.findViewById(R.id.comment);
+			commentTextView = itemView.findViewById(R.id.commentText);
+			sendView = itemView.findViewById(R.id.send);
+		}
+
+		void bind(RatingItem ratingItem, Consumer<RatingItem> onRatingItemSendClickListener) {
+			beforeTextView.setText(ratingItem.textBefore);
+			afterTextView.setText(ratingItem.textAfter);
+			commentView.setText(ratingItem.comment);
+			commentTextView.setText(ratingItem.comment);
+			ratingView.setRating(ratingItem.rating5);
+			ratingSmallView.setRating(ratingItem.rating5);
+			sendView.setEnabled(ratingItem.rating5 > 0);
+
+			boolean textBeforeVisible = !ratingItem.isSet && ratingItem.textBefore != null && !ratingItem.textBefore.isEmpty();
+			boolean commentVisible = !ratingItem.isSet && ratingItem.commentEnabled;
+			boolean commentTextVisible = ratingItem.isSet && ratingItem.comment != null && !ratingItem.comment.isEmpty();
+			boolean ratingVisible = !ratingItem.isSet;
+			boolean sendVisible = !ratingItem.isSet;
+			boolean textAfterVisible = ratingItem.isSet  && ratingItem.textAfter != null && !ratingItem.textAfter.isEmpty();
+
+			beforeTextView.setVisibility(textBeforeVisible ? View.VISIBLE : View.GONE);
+			afterTextView.setVisibility(textAfterVisible ? View.VISIBLE : View.GONE);
+			commentView.setVisibility(commentVisible ? View.VISIBLE : View.GONE);
+			commentTextView.setVisibility(commentTextVisible ? View.VISIBLE : View.GONE);
+			ratingView.setVisibility(ratingVisible ? View.VISIBLE : View.GONE);
+			ratingSmallView.setVisibility(!ratingVisible ? View.VISIBLE : View.GONE);
+			sendView.setVisibility(sendVisible ? View.VISIBLE : View.GONE);
+
+			ratingView.setOnRatingChangeListener((ratingBar, rating, fromUser) -> {
+				if (fromUser) {
+					ratingItem.rating5 = (int) rating;
+					sendView.setEnabled(ratingItem.rating5 > 0);
+				}
+			});
+			sendView.setOnClickListener(v -> {
+				try {
+					onRatingItemSendClickListener.accept(ratingItem);
+				} catch (Exception e) {
+					Log.e(TAG, "onRatingItemSendClickListener error", e);
+				}
+			});
+			commentView.addTextChangedListener(new TextWatcherAdapter() {
+				@Override
+				public void afterTextChanged(Editable s) {
+					ratingItem.comment = s.toString().trim();
+				}
+			});
+		}
+	}
+
+	private static class Rating2Holder extends BaseMessageHolder {
+		TextView beforeTextView;
+		TextView afterTextView;
+		ImageView feedback2pointSmallPositiveView;
+		ImageView feedback2pointSmallNegativeView;
+		ImageView feedback2pointLargePositiveView;
+		ImageView feedback2pointLargeNegativeView;
+		View helper1View;
+		View helper2View;
+		View ratingSmallContainer;
+		EditText commentView;
+		TextView commentTextView;
+		View sendView;
+		View rootView;
+
+		Rating2Holder(View itemView) {
+			super(itemView);
+
+			rootView = itemView.findViewById(R.id.rootView);
+			beforeTextView = itemView.findViewById(R.id.beforeText);
+			afterTextView = itemView.findViewById(R.id.afterText);
+			feedback2pointSmallPositiveView = itemView.findViewById(R.id.feedback2pointSmallPositiveView);
+			feedback2pointSmallNegativeView = itemView.findViewById(R.id.feedback2pointSmallNegativeView);
+			feedback2pointLargePositiveView = itemView.findViewById(R.id.feedback2pointLargePositiveView);
+			feedback2pointLargeNegativeView = itemView.findViewById(R.id.feedback2pointLargeNegativeView);
+			helper1View = itemView.findViewById(R.id.helper1);
+			helper2View = itemView.findViewById(R.id.helper2);
+			ratingSmallContainer = itemView.findViewById(R.id.ratingSmallContainer);
+			commentView = itemView.findViewById(R.id.comment);
+			commentTextView = itemView.findViewById(R.id.commentText);
+			sendView = itemView.findViewById(R.id.send);
+		}
+
+		void bind(RatingItem ratingItem, Consumer<RatingItem> onRatingItemSendClickListener) {
+			beforeTextView.setText(ratingItem.textBefore);
+			afterTextView.setText(ratingItem.textAfter);
+			commentView.setText(ratingItem.comment);
+			commentTextView.setText(ratingItem.comment);
+
+			// clear state
+			int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
+			feedback2pointLargeNegativeView.setTag(null);
+			feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			feedback2pointLargePositiveView.setTag(null);
+			feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			// set state
+			if (ratingItem.rating2 != null) {
+				if (ratingItem.rating2) {
+					feedback2pointLargePositiveView.setTag(true);
+					feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(
+							RatingConst.COLOR_POSITIVE_THUMB
+					));
+					feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
+							RatingConst.COLOR_POSITIVE_THUMB
+					));
+				} else {
+					feedback2pointLargeNegativeView.setTag(true);
+					feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(
+							RatingConst.COLOR_NEGATIVE_THUMB
+					));
+					feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(
+							RatingConst.COLOR_NEGATIVE_THUMB
+					));
+				}
+			}
+
+			sendView.setEnabled(ratingItem.rating2 != null);
+
+			boolean textBeforeVisible = !ratingItem.isSet && ratingItem.textBefore != null && !ratingItem.textBefore.isEmpty();
+			boolean commentVisible = !ratingItem.isSet && ratingItem.commentEnabled;
+			boolean commentTextVisible = ratingItem.isSet && ratingItem.comment != null && !ratingItem.comment.isEmpty();
+			boolean ratingVisible = !ratingItem.isSet;
+			boolean sendVisible = !ratingItem.isSet;
+			boolean textAfterVisible = ratingItem.isSet  && ratingItem.textAfter != null && !ratingItem.textAfter.isEmpty();
+
+			beforeTextView.setVisibility(textBeforeVisible ? View.VISIBLE : View.GONE);
+			afterTextView.setVisibility(textAfterVisible ? View.VISIBLE : View.GONE);
+			commentView.setVisibility(commentVisible ? View.VISIBLE : View.GONE);
+			commentTextView.setVisibility(commentTextVisible ? View.VISIBLE : View.GONE);
+			helper1View.setVisibility(ratingVisible ? View.VISIBLE : View.GONE);
+			helper2View.setVisibility(ratingVisible ? View.VISIBLE : View.GONE);
+			ratingSmallContainer.setVisibility(!ratingVisible ? View.VISIBLE : View.GONE);
+			sendView.setVisibility(sendVisible ? View.VISIBLE : View.GONE);
+
+			View.OnClickListener setFeedbackClickListener = v -> {
+				if (v.getId() == feedback2pointLargePositiveView.getId()) {
+					feedback2pointLargePositiveView.setTag(true);
+					feedback2pointLargeNegativeView.setTag(null);
+
+					feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(
+							RatingConst.COLOR_POSITIVE_THUMB
+					));
+					feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(RatingConst.COLOR_INACTIVE_THUMB));
+
+					ratingItem.rating2 = true;
+				} else {
+					feedback2pointLargePositiveView.setTag(null);
+					feedback2pointLargeNegativeView.setTag(true);
+
+					feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(
+							RatingConst.COLOR_NEGATIVE_THUMB
+					));
+					feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(RatingConst.COLOR_INACTIVE_THUMB));
+
+					ratingItem.rating2 = false;
+				}
+
+				sendView.setEnabled(true);
+			};
+			feedback2pointLargePositiveView.setOnClickListener(setFeedbackClickListener);
+			feedback2pointLargeNegativeView.setOnClickListener(setFeedbackClickListener);
+
+			sendView.setOnClickListener(v -> {
+				try {
+					onRatingItemSendClickListener.accept(ratingItem);
+				} catch (Exception e) {
+					Log.e(TAG, "onRatingItemSendClickListener error", e);
+				}
+			});
+			commentView.addTextChangedListener(new TextWatcherAdapter() {
+				@Override
+				public void afterTextChanged(Editable s) {
+					ratingItem.comment = s.toString().trim();
+				}
+			});
 		}
 	}
 

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/rootView"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginHorizontal="18dp"
+	android:layout_marginTop="24dp"
+	android:layout_marginBottom="10dp"
+	android:orientation="vertical">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:background="@drawable/bg_rating_message"
+		android:padding="16dp">
+
+		<TextView
+			android:id="@+id/beforeText"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#000000"
+			android:textSize="14sp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:text="Text before" />
+
+		<per.wsj.library.AndRatingBar
+			android:id="@+id/ratingSmall"
+			android:layout_width="wrap_content"
+			android:layout_height="20dp"
+			android:layout_marginTop="16dp"
+			android:isIndicator="true"
+			android:numStars="5"
+			android:stepSize="1"
+			app:bgColor="#0F000000"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/beforeText"
+			app:layout_goneMarginTop="0dp"
+			app:starColor="#FADB14"
+			app:starSpacing="8dp"
+			tools:rating="3" />
+
+		<per.wsj.library.AndRatingBar
+			android:id="@+id/rating"
+			android:layout_width="wrap_content"
+			android:layout_height="45dp"
+			android:layout_marginTop="16dp"
+			android:isIndicator="false"
+			android:numStars="5"
+			android:stepSize="1"
+			app:bgColor="#0F000000"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/ratingSmall"
+			app:layout_goneMarginTop="16dp"
+			app:starColor="#FADB14"
+			app:starSpacing="8dp"
+			tools:rating="3" />
+
+		<EditText
+			android:id="@+id/comment"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:background="#ffffff"
+			android:gravity="top|start"
+			android:hint="Комментарий (не обязательно)"
+			android:importantForAutofill="no"
+			android:inputType="textMultiLine|textCapSentences"
+			android:maxLength="1000"
+			android:minLines="2"
+			android:paddingHorizontal="10dp"
+			android:paddingVertical="4dp"
+			android:singleLine="false"
+			android:textColor="#000000"
+			android:textColorHint="@color/colorHint"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/rating" />
+
+		<TextView
+			android:id="@+id/commentText"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:textColor="#000000"
+			android:textSize="14sp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/comment"
+			tools:text="Comment text" />
+
+		<com.google.android.material.button.MaterialButton
+			android:id="@+id/send"
+			style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:backgroundTint="@color/bg_rate_button"
+			android:enabled="false"
+			android:text="Оценить"
+			android:textColor="@color/text_color_rate_button"
+			android:textSize="14sp"
+			app:cornerRadius="10dp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/commentText"
+			app:strokeColor="@color/bg_stroke_rate_button"
+			app:strokeWidth="1dp" />
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+	<TextView
+		android:id="@+id/afterText"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textColor="#7E7979"
+		android:textSize="14sp"
+		android:layout_marginTop="24dp"
+		android:layout_gravity="center_horizontal"
+		tools:text="Text after" />
+</LinearLayout>

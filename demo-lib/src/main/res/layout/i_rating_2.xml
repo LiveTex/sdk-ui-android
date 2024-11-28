@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/rootView"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginHorizontal="18dp"
+	android:layout_marginTop="24dp"
+	android:layout_marginBottom="10dp"
+	android:orientation="vertical">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:background="@drawable/bg_rating_message"
+		android:padding="16dp">
+
+		<TextView
+			android:id="@+id/beforeText"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#000000"
+			android:textSize="14sp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:text="Text before" />
+
+		<androidx.constraintlayout.widget.ConstraintLayout
+			android:id="@+id/ratingSmallContainer"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/beforeText">
+
+			<ImageView
+				android:id="@+id/feedback2pointSmallPositiveView"
+				android:layout_width="22dp"
+				android:layout_height="20dp"
+				android:layout_marginEnd="20dp"
+				android:background="?attr/selectableItemBackgroundBorderless"
+				android:src="@drawable/thumbup"
+				app:layout_constraintEnd_toStartOf="@+id/feedback2pointSmallNegativeView"
+				app:layout_constraintTop_toTopOf="parent"
+				app:tint="#E5E6E8" />
+
+			<ImageView
+				android:id="@+id/feedback2pointSmallNegativeView"
+				android:layout_width="22dp"
+				android:layout_height="20dp"
+				android:background="?attr/selectableItemBackgroundBorderless"
+				android:src="@drawable/thumbdown"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintTop_toTopOf="parent"
+				app:tint="#E5E6E8" />
+		</androidx.constraintlayout.widget.ConstraintLayout>
+
+		<FrameLayout
+			android:id="@+id/helper1"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:layout_marginEnd="52dp"
+			app:layout_constraintEnd_toStartOf="@+id/helper2"
+			app:layout_constraintHorizontal_chainStyle="packed"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/ratingSmallContainer">
+
+			<ImageView
+				android:id="@+id/feedback2pointLargePositiveView"
+				android:layout_width="50dp"
+				android:layout_height="45dp"
+				android:background="?attr/selectableItemBackgroundBorderless"
+				android:src="@drawable/thumbup"
+				app:tint="#E5E6E8" />
+		</FrameLayout>
+
+		<FrameLayout
+			android:id="@+id/helper2"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintHorizontal_chainStyle="packed"
+			app:layout_constraintStart_toEndOf="@+id/helper1"
+			app:layout_constraintTop_toBottomOf="@id/ratingSmallContainer">
+
+			<ImageView
+				android:id="@+id/feedback2pointLargeNegativeView"
+				android:layout_width="50dp"
+				android:layout_height="45dp"
+				android:background="?attr/selectableItemBackgroundBorderless"
+				android:src="@drawable/thumbdown"
+				app:tint="#E5E6E8" />
+		</FrameLayout>
+
+		<EditText
+			android:id="@+id/comment"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:background="#ffffff"
+			android:gravity="top|start"
+			android:hint="Комментарий (не обязательно)"
+			android:importantForAutofill="no"
+			android:inputType="textMultiLine|textCapSentences"
+			android:maxLength="1000"
+			android:minLines="2"
+			android:paddingHorizontal="10dp"
+			android:paddingVertical="4dp"
+			android:singleLine="false"
+			android:textColor="#000000"
+			android:textColorHint="@color/colorHint"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/helper2" />
+
+		<TextView
+			android:id="@+id/commentText"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:textColor="#000000"
+			android:textSize="14sp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/comment"
+			tools:text="Comment text" />
+
+		<com.google.android.material.button.MaterialButton
+			android:id="@+id/send"
+			style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:backgroundTint="@color/bg_rate_button"
+			android:enabled="false"
+			android:text="Оценить"
+			android:textColor="@color/text_color_rate_button"
+			android:textSize="14sp"
+			app:cornerRadius="10dp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/commentText"
+			app:strokeColor="@color/bg_stroke_rate_button"
+			app:strokeWidth="1dp" />
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+	<TextView
+		android:id="@+id/afterText"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center_horizontal"
+		android:layout_marginTop="24dp"
+		android:textColor="#7E7979"
+		android:textSize="14sp"
+		tools:text="Text after" />
+</LinearLayout>

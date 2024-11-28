@@ -141,7 +141,6 @@
 						android:layout_height="45dp"
 						android:background="?attr/selectableItemBackgroundBorderless"
 						android:src="@drawable/thumbup"
-
 						app:tint="#E5E6E8" />
 				</FrameLayout>
 
