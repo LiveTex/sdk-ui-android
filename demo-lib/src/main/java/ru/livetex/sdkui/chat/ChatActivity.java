@@ -292,6 +292,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			} else {
 				viewModel.sendFeedback2points(item.rating2, item.comment);
 			}
+			InputUtils.hideKeyboard(this);
 		});
 
 		messagesView.setAdapter(adapter);
