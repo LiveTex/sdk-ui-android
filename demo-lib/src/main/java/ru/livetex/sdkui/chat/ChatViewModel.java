@@ -63,6 +63,7 @@ public final class ChatViewModel extends ViewModel {
 	final MutableLiveData<List<Department>> departmentsLiveData = new MutableLiveData<>();
 	final MutableLiveData<DialogState> dialogStateUpdateLiveData = new MutableLiveData<>();
 	final MutableLiveData<ChatViewStateData> viewStateLiveData = new MutableLiveData<>(new ChatViewStateData(ChatViewState.NORMAL, ChatInputState.DISABLED));
+	final List<ChatViewState> pendingViewStates = new ArrayList<>();
 	final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
 	final BehaviorSubject<Boolean> updateMessagesSignal = BehaviorSubject.createDefault(false);
 
@@ -115,7 +116,10 @@ public final class ChatViewModel extends ViewModel {
 					// Это лишь пример реализации того, как собрать и отправить аттрибуты.
 					// Важно только ответить на attributesRequest посылкой обязательных (если есть) аттрибутов.
 					// То есть если не требуется собирать аттрибуты от пользователя, можно просто ответить на запрос с помощью messagesHandler.sendAttributes
-					updateViewState(ChatViewState.ATTRIBUTES);
+					if (!pendingViewStates.contains(ChatViewState.ATTRIBUTES)) {
+						pendingViewStates.add(ChatViewState.ATTRIBUTES);
+					}
+					updateViewStateByPendingState();
 
 //					Disposable d = Completable.fromAction(() -> messagesHandler.sendAttributes("Demo user", null, null, null))
 //							.subscribeOn(Schedulers.io())
@@ -196,7 +200,11 @@ public final class ChatViewModel extends ViewModel {
 		}
 
 		departmentsLiveData.postValue(departments);
-		updateViewState(ChatViewState.DEPARTMENTS);
+
+		if (!pendingViewStates.contains(ChatViewState.DEPARTMENTS)) {
+			pendingViewStates.add(ChatViewState.DEPARTMENTS);
+		}
+		updateViewStateByPendingState();
 	}
 
 	void sendAttributes(String name, String phone, String email) {
@@ -204,7 +212,10 @@ public final class ChatViewModel extends ViewModel {
 				.subscribeOn(Schedulers.io())
 				.observeOn(Schedulers.io())
 				.subscribe(() -> {
-					updateViewState(ChatViewState.NORMAL);
+					if (!pendingViewStates.isEmpty() && pendingViewStates.get(0) == ChatViewState.ATTRIBUTES) {
+						pendingViewStates.remove(0);
+					}
+					updateViewStateByPendingState();
 				}, thr -> Log.e(TAG, "sendAttributes", thr));
 		disposables.add(d);
 	}
@@ -270,7 +281,10 @@ public final class ChatViewModel extends ViewModel {
 					if (response.error != null && response.error.contains(LiveTexError.INVALID_DEPARTMENT)) {
 						errorLiveData.postValue("Была выбрана невалидная комната");
 					} else {
-						updateViewState(ChatViewState.NORMAL);
+						if (!pendingViewStates.isEmpty() && pendingViewStates.get(0) == ChatViewState.DEPARTMENTS) {
+							pendingViewStates.remove(0);
+						}
+						updateViewStateByPendingState();
 					}
 				}, thr -> {
 					errorLiveData.postValue(thr.getMessage());
@@ -373,6 +387,16 @@ public final class ChatViewModel extends ViewModel {
 		} else {
 			updateViewState(ChatViewState.NORMAL);
 		}
+	}
+
+	private void updateViewStateByPendingState() {
+		if (pendingViewStates.isEmpty()) {
+			updateViewState(ChatViewState.NORMAL);
+			return;
+		}
+
+		ChatViewState firstState = pendingViewStates.get(0);
+		updateViewState(firstState);
 	}
 
 	private void updateHistory(HistoryEntity historyEntity) {

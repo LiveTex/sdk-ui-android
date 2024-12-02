@@ -706,6 +706,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				inputView.clearFocus();
 				inputContainerView.setVisibility(View.GONE);
 				attributesContainerView.setVisibility(View.VISIBLE);
+				departmentsContainerView.setVisibility(View.GONE);
 				break;
 			case DEPARTMENTS:
 				InputUtils.hideKeyboard(this);
