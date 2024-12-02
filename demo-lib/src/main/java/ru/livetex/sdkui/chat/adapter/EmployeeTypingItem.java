@@ -1,15 +1,22 @@
 package ru.livetex.sdkui.chat.adapter;
 
-import ru.livetex.sdkui.chat.db.entity.ChatMessage;
+import ru.livetex.sdk.entity.Creator;
 
-public class EmployeeTypingItem extends ChatItem {
+public final class EmployeeTypingItem implements Comparable<AdapterItem>, AdapterItem {
+	public Creator creator;
 
-	public EmployeeTypingItem(ChatMessage message) {
-		super(message);
+	public EmployeeTypingItem(Creator creator) {
+		this.creator = creator;
 	}
 
 	@Override
 	public ItemType getAdapterItemType() {
 		return ItemType.EMPLOYEE_TYPING;
+	}
+
+	@Override
+	public int compareTo(AdapterItem o) {
+		// always at the end of chat list
+		return 1;
 	}
 }

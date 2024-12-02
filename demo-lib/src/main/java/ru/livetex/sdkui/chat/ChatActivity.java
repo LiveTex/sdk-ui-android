@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -501,15 +502,13 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				items.add(new DateItem(dayDate));
 			}
 
-			if (!chatMessage.id.equals(ChatMessage.ID_TYPING)) {
-				items.add(new ChatItem(chatMessage));
-			} else {
-				items.add(new EmployeeTypingItem(chatMessage));
-			}
+			items.add(new ChatItem(chatMessage));
 		}
 
 		List<AdapterItem> additionalItems = viewModel.getAdditionalChatItems();
 		items.addAll(additionalItems);
+
+		Collections.sort(items);
 
 		ChatMessageDiffUtil diffUtil =
 				new ChatMessageDiffUtil(adapter.getData(), items);

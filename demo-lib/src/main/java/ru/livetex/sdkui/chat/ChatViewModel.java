@@ -8,6 +8,8 @@ import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +42,7 @@ import ru.livetex.sdk.network.AuthData;
 import ru.livetex.sdk.network.NetworkManager;
 import ru.livetex.sdkui.Const;
 import ru.livetex.sdkui.chat.adapter.AdapterItem;
+import ru.livetex.sdkui.chat.adapter.EmployeeTypingItem;
 import ru.livetex.sdkui.chat.adapter.RatingItem;
 import ru.livetex.sdkui.chat.db.ChatState;
 import ru.livetex.sdkui.chat.db.Mapper;
@@ -70,6 +73,7 @@ public final class ChatViewModel extends ViewModel {
 	boolean isConnected = false;
 	private String quoteText = null;
 	private RatingItem ratingChatItem = null;
+	private EmployeeTypingItem typingChatItem = null;
 
 	public ChatViewModel(SharedPreferences sp) {
 		this.sp = sp;
@@ -124,9 +128,7 @@ public final class ChatViewModel extends ViewModel {
 
 		disposables.add(messagesHandler.dialogStateUpdate()
 				.observeOn(Schedulers.io())
-				.subscribe(state -> {
-					onDialogStateUpdate(state);
-				}, thr -> {
+				.subscribe(this::onDialogStateUpdate, thr -> {
 					Log.e(TAG, "dialogStateUpdate error", thr);
 				}));
 
@@ -137,9 +139,9 @@ public final class ChatViewModel extends ViewModel {
 						// We need Employee info
 						return;
 					}
-					if (ChatState.instance.getMessage(ChatMessage.ID_TYPING) == null) {
-						ChatMessage typingMessage = ChatState.instance.createTypingMessage(dialogStateUpdateLiveData.getValue().employee);
-						// added in list, nothing to do
+					if (typingChatItem == null) {
+						typingChatItem = new EmployeeTypingItem(dialogStateUpdateLiveData.getValue().employee);
+						updateMessagesSignal.onNext(true);
 					}
 					if (employeeTypingDisposable != null && !employeeTypingDisposable.isDisposed()) {
 						employeeTypingDisposable.dispose();
@@ -148,7 +150,8 @@ public final class ChatViewModel extends ViewModel {
 					employeeTypingDisposable = Completable.timer(3, TimeUnit.SECONDS)
 							.observeOn(Schedulers.io())
 							.subscribe(() -> {
-								ChatState.instance.removeMessage(ChatMessage.ID_TYPING, true);
+								typingChatItem = null;
+								updateMessagesSignal.onNext(true);
 							}, thr -> {
 								Log.e(TAG, "employeeTyping disposable error", thr);
 							});
@@ -347,6 +350,9 @@ public final class ChatViewModel extends ViewModel {
 		if (ratingChatItem != null) {
 			list.add(ratingChatItem);
 		}
+		if (typingChatItem != null) {
+			list.add(typingChatItem);
+		}
 		return list;
 	}
 
@@ -384,7 +390,9 @@ public final class ChatViewModel extends ViewModel {
 		// Remove "Employee Typing" indicator
 		if (employeeTypingDisposable != null && !employeeTypingDisposable.isDisposed()) {
 			employeeTypingDisposable.dispose();
-			ChatState.instance.removeMessage(ChatMessage.ID_TYPING, false);
+			typingChatItem = null;
+			// will be updated anyway
+			//updateMessagesSignal.onNext(true);
 		}
 
 		ChatState.instance.addMessages(messages);
@@ -490,6 +498,22 @@ public final class ChatViewModel extends ViewModel {
 
 		boolean notify;
 		if (shouldShowFeedback) {
+			Date date;
+
+			if (ratingChatItem == null) {
+				// try to set date as a bit later than last message
+				List<ChatMessage> messages = ChatState.instance.messages().blockingFirst();
+				if (!messages.isEmpty()) {
+					ChatMessage msg = messages.get(messages.size() - 1);
+					date = msg.createdAt;
+					date.setTime(date.getTime() + 1000);
+				} else  {
+					date = new Date();
+				}
+			} else {
+				date = ratingChatItem.createdAt;
+			}
+
 			RatingItem item = new RatingItem(state.rate.textBefore,
 					state.rate.textAfter,
 					state.rate.commentEnabled != null && state.rate.commentEnabled,
@@ -497,7 +521,8 @@ public final class ChatViewModel extends ViewModel {
 					state.rate.isSet != null ? state.rate.isSet.value.equals("1") : null,
 					state.rate.isSet != null ? state.rate.isSet.comment : null,
 					state.rate.isSet != null,
-					state.rate.enabledType);
+					state.rate.enabledType,
+					date);
 
 			notify = !Objects.equals(ratingChatItem, item);
 			ratingChatItem = item;

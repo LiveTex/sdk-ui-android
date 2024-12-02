@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.functions.Consumer;
 import per.wsj.library.AndRatingBar;
+import ru.livetex.sdk.entity.Creator;
 import ru.livetex.sdk.entity.DialogRatingType;
 import ru.livetex.sdk.entity.Employee;
 import ru.livetex.sdk.entity.KeyboardEntity;
@@ -363,11 +364,11 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 			timeView = itemView.findViewById(R.id.timeView);
 		}
 
-		void bind(EmployeeTypingItem message) {
+		void bind(EmployeeTypingItem typingItem) {
 			handler = new Handler(Looper.getMainLooper());
 
-			loadAvatar(avatarView, message);
-			setOperatorName(nameView, message);
+			loadAvatar(avatarView, typingItem.creator);
+			setOperatorName(nameView, typingItem.creator);
 
 			timeView.setVisibility(View.GONE);
 
@@ -889,10 +890,43 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 		}
 	}
 
+	// For better implementation see https://bumptech.github.io/glide/int/recyclerview.html
+	private static void loadAvatar(ImageView avatarView, Creator creator) {
+		Object avatarUrl;
+		if (creator instanceof Employee) {
+			avatarUrl = ((Employee) creator).avatarUrl;
+		} else {
+			avatarUrl = R.drawable.logo;
+		}
+
+		if (avatarUrl != null) {
+			Glide.with(avatarView.getContext())
+					.load(avatarUrl)
+					.placeholder(R.drawable.avatar)
+					.error(R.drawable.avatar)
+					.centerCrop()
+					.dontAnimate()
+					.apply(RequestOptions.circleCropTransform())
+					.into(avatarView);
+		} else {
+			avatarView.setImageResource(R.drawable.avatar);
+		}
+	}
+
 	private static void setOperatorName(TextView nameView, ChatItem message) {
 		String name = null;
 		if (!message.isBot) {
 			name = ((Employee) message.creator).name;
+		}
+
+		nameView.setText(name);
+		nameView.setVisibility(!TextUtils.isEmpty(name) ? View.VISIBLE : View.GONE);
+	}
+
+	private static void setOperatorName(TextView nameView, Creator creator) {
+		String name = null;
+		if (creator instanceof Employee) {
+			name = ((Employee) creator).name;
 		}
 
 		nameView.setText(name);

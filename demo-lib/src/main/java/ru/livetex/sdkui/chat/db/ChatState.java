@@ -25,8 +25,8 @@ public final class ChatState {
 
 	public final static ChatState instance = new ChatState();
 
-	private Map<String, ChatMessage> messages = new ConcurrentHashMap<>();
-	private BehaviorSubject<List<ChatMessage>> messagesSubject = BehaviorSubject.createDefault(Collections.emptyList());
+	private final Map<String, ChatMessage> messages = new ConcurrentHashMap<>();
+	private final BehaviorSubject<List<ChatMessage>> messagesSubject = BehaviorSubject.createDefault(Collections.emptyList());
 	// Indicates that chat possible has previous messages (GetHistoryRequest can be done on scroll chat to top).
 	// Initially it can be always true and set to false when HistoryEntity (related to GetHistoryRequest) messages count < offset.
 	public boolean canPreloadChatMessages = true;
@@ -101,24 +101,6 @@ public final class ChatState {
 				false,
 				filePath,
 				new Visitor(),
-				null
-		);
-		addOrUpdateMessage(chatMessage);
-		return chatMessage;
-	}
-
-	/**
-	 * Create local typing message
-	 * // todo: id scheme need improvement. now no way to distinguish between sent and local messages (fake and not fake id)
-	 */
-	public synchronized ChatMessage createTypingMessage(Employee employee) {
-		ChatMessage chatMessage = new ChatMessage(
-				"typing",
-				"",
-				new Date(),
-				true,
-				null,
-				employee,
 				null
 		);
 		addOrUpdateMessage(chatMessage);
