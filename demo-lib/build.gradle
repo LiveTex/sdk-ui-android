@@ -57,7 +57,7 @@ dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	
 	// LiveTex
-	api 'com.github.LiveTex:sdk-android:rating_updates-SNAPSHOT'
+	api 'com.github.LiveTex:sdk-android:1.5'
 
 	// androidx, ui
 	implementation 'androidx.appcompat:appcompat:1.7.0'
