@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +25,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -286,6 +287,15 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			}
 		});
 
+		adapter.setOnRatingItemSendClickListener(item -> {
+			if (item.type == DialogRatingType.FIVE_POINT) {
+				viewModel.sendFeedback5points(item.rating5, item.comment);
+			} else {
+				viewModel.sendFeedback2points(item.rating2, item.comment);
+			}
+			InputUtils.hideKeyboard(this);
+		});
+
 		messagesView.setAdapter(adapter);
 //		DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(messagesView.getContext(),
 //				DividerItemDecoration.VERTICAL);
@@ -293,9 +303,14 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 //		messagesView.addItemDecoration(dividerItemDecoration);
 		((SimpleItemAnimator) messagesView.getItemAnimator()).setSupportsChangeAnimations(false);
 
-		disposables.add(ChatState.instance.messages()
-				.observeOn(AndroidSchedulers.mainThread())
-				.subscribe(this::setMessages, thr -> Log.e(TAG, "messages observe", thr)));
+		disposables.add(
+				Observable.combineLatest(
+								ChatState.instance.messages(),
+								viewModel.updateMessagesSignal,
+								(messages, signal) -> messages
+						)
+						.observeOn(AndroidSchedulers.mainThread())
+						.subscribe(this::setMessages, thr -> Log.e(TAG, "messages observe", thr)));
 
 		messagesView.addOnScrollListener(new RecyclerViewScrollListener((LinearLayoutManager) messagesView.getLayoutManager()) {
 			@Override
@@ -410,7 +425,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			}
 
 			if (viewModel.isConnected) {
-				viewModel.sendFeedback2points(binding.feedback2pointLargePositiveView.getTag() != null);
+				viewModel.sendFeedback2points(binding.feedback2pointLargePositiveView.getTag() != null, null);
 				// collapse container
 				binding.feedback2pointsContainerView.callOnClick();
 			} else {
@@ -462,7 +477,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			}
 
 			if (viewModel.isConnected) {
-				viewModel.sendFeedback5points(binding.feedback5pointLargeStarsView.getRating());
+				viewModel.sendFeedback5points(binding.feedback5pointLargeStarsView.getRating(), null);
 				// collapse container
 				feedback5pointContainerClickListener.onClick(binding.feedback2pointsContainerView);
 			} else {
@@ -487,12 +502,13 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				items.add(new DateItem(dayDate));
 			}
 
-			if (!chatMessage.id.equals(ChatMessage.ID_TYPING)) {
-				items.add(new ChatItem(chatMessage));
-			} else {
-				items.add(new EmployeeTypingItem(chatMessage));
-			}
+			items.add(new ChatItem(chatMessage));
 		}
+
+		List<AdapterItem> additionalItems = viewModel.getAdditionalChatItems();
+		items.addAll(additionalItems);
+
+		Collections.sort(items);
 
 		ChatMessageDiffUtil diffUtil =
 				new ChatMessageDiffUtil(adapter.getData(), items);
@@ -690,6 +706,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				inputView.clearFocus();
 				inputContainerView.setVisibility(View.GONE);
 				attributesContainerView.setVisibility(View.VISIBLE);
+				departmentsContainerView.setVisibility(View.GONE);
 				break;
 			case DEPARTMENTS:
 				InputUtils.hideKeyboard(this);
@@ -774,7 +791,9 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 	 * Here you can use dialog status and employee data
 	 */
 	private void updateDialogState(DialogState dialogState) {
-		boolean shouldShowFeedback = dialogState.rate != null && dialogState.rate.enabledType != null;
+		boolean shouldShowFeedback = dialogState.rate != null &&
+				dialogState.rate.enabledType != null &&
+				dialogState.status != DialogState.DialogStatus.UNASSIGNED;
 		binding.feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
 
 		if (shouldShowFeedback) {
@@ -906,9 +925,4 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
 	}
 
-	static final class RatingConst {
-		final static int COLOR_INACTIVE_THUMB = Color.parseColor("#E5E6E8");
-		final static int COLOR_POSITIVE_THUMB = Color.parseColor("#10C257");
-		final static int COLOR_NEGATIVE_THUMB = Color.parseColor("#F02020");
-	}
 }

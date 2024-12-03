@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 
-public class DateItem implements Comparable, AdapterItem {
+public class DateItem implements Comparable<AdapterItem>, AdapterItem {
 	@NonNull
 	public String text;
 
@@ -13,7 +13,7 @@ public class DateItem implements Comparable, AdapterItem {
 	}
 
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(AdapterItem o) {
 		if (o instanceof DateItem) {
 			return text.compareTo(((DateItem) o).text);
 		}

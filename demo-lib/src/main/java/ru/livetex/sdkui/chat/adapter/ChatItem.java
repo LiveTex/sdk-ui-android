@@ -15,7 +15,7 @@ import ru.livetex.sdkui.chat.db.entity.MessageSentState;
 /**
  * This is wrapper for ChatMessage entity. It allows to use only UI data and also made adapter item mutable (for DiffUtil).
  */
-public class ChatItem implements Comparable, AdapterItem {
+public class ChatItem implements Comparable<AdapterItem>, AdapterItem {
 	@NonNull
 	public String id;
 	@NonNull
@@ -50,7 +50,7 @@ public class ChatItem implements Comparable, AdapterItem {
 	}
 
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(AdapterItem o) {
 		if (o instanceof ChatItem) {
 			return createdAt.compareTo(((ChatItem) o).createdAt);
 		}
