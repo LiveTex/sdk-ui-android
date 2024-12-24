@@ -791,10 +791,31 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 	 * Here you can use dialog status and employee data
 	 */
 	private void updateDialogState(DialogState dialogState) {
-		boolean shouldShowFeedback = dialogState.rate != null &&
-				dialogState.rate.enabledType != null &&
-				dialogState.status != DialogState.DialogStatus.UNASSIGNED;
+		DialogState stateToUse = dialogState;
+		boolean shouldShowFeedback = stateToUse.rate != null &&
+				stateToUse.rate.enabledType != null &&
+				stateToUse.status != DialogState.DialogStatus.UNASSIGNED;
+
+		// Special logic to leave rating panel shown after dialog finished
+		if (!shouldShowFeedback && viewModel.pendingRatingPanelState.getValue().isPresent()) {
+			shouldShowFeedback = true;
+			stateToUse = viewModel.pendingRatingPanelState.getValue().get();
+		}
+
 		binding.feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
+
+		// clear possible user state
+		binding.feedback5pointLargeStarsView.setRating(0.0f);
+		binding.feedback5pointSmallStarsView.setRating(0.0f);
+
+		int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
+		binding.feedback2pointLargeNegativeView.setTag(null);
+		binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+		binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+		binding.feedback2pointLargePositiveView.setTag(null);
+		binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+		binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+
 
 		if (shouldShowFeedback) {
 			// clear state and try to preserve user state
@@ -805,7 +826,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			boolean userSet5points = binding.feedback5pointLargeStarsView.getRating() > 0.0f;
 			binding.feedback5pointRateView.setEnabled(userSet5points);
 
-			if (dialogState.rate.enabledType == DialogRatingType.DOUBLE_POINT) {
+			if (stateToUse.rate.enabledType == DialogRatingType.DOUBLE_POINT) {
 				binding.feedback2pointsContainerView.setVisibility(View.VISIBLE);
 
 				// try to preserve user state, if any
@@ -815,12 +836,12 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 					binding.feedback2pointOuterContainerView.setVisibility(View.VISIBLE);
 				}
 
-				if (dialogState.rate.isSet != null) {
+				if (stateToUse.rate.isSet != null) {
 					// something is already set
-					if (dialogState.rate.isSet.type == DialogRatingType.DOUBLE_POINT) {
+					if (stateToUse.rate.isSet.type == DialogRatingType.DOUBLE_POINT) {
 						// rating system fits - display rating and DON"T disable ability to change rating
 
-						if (dialogState.rate.isSet.value.equals("1")) {
+						if (stateToUse.rate.isSet.value.equals("1")) {
 							// positive
 							binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
 									RatingConst.COLOR_POSITIVE_THUMB
@@ -837,7 +858,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 									RatingConst.COLOR_NEGATIVE_THUMB
 							));
 						}
-					} else if (dialogState.rate.isSet.type == DialogRatingType.FIVE_POINT) {
+					} else if (stateToUse.rate.isSet.type == DialogRatingType.FIVE_POINT) {
 						// rating system doesn't fit - don't display non-fit rating
 						binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(
 								RatingConst.COLOR_INACTIVE_THUMB
@@ -849,7 +870,7 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				} else {
 					// do nothing?
 				}
-			} else if (dialogState.rate.enabledType == DialogRatingType.FIVE_POINT) {
+			} else if (stateToUse.rate.enabledType == DialogRatingType.FIVE_POINT) {
 				binding.feedback5pointsContainerView.setVisibility(View.VISIBLE);
 
 				// try to preserve user state, if any
@@ -860,17 +881,17 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				}
 
 
-				if (dialogState.rate.isSet != null) {
+				if (stateToUse.rate.isSet != null) {
 					// something is already set
-					if (dialogState.rate.isSet.type == DialogRatingType.FIVE_POINT) {
+					if (stateToUse.rate.isSet.type == DialogRatingType.FIVE_POINT) {
 						// rating system fits - display rating and DON"T disable ability to change rating
 
 						try {
-							binding.feedback5pointSmallStarsView.setRating(Float.parseFloat(dialogState.rate.isSet.value));
+							binding.feedback5pointSmallStarsView.setRating(Float.parseFloat(stateToUse.rate.isSet.value));
 						} catch (Exception e) {
-							Log.e(TAG, "error when parsing dialogState.rate.isSet.value", e);
+							Log.e(TAG, "error when parsing stateToUse.rate.isSet.value", e);
 						}
-					} else if (dialogState.rate.isSet.type == DialogRatingType.DOUBLE_POINT) {
+					} else if (stateToUse.rate.isSet.type == DialogRatingType.DOUBLE_POINT) {
 						// rating system doesn't fit - don't display non-fit rating
 						binding.feedback5pointSmallStarsView.setRating(0.0f);
 					}
@@ -878,18 +899,6 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 					// do nothing?
 				}
 			}
-		} else {
-			// clear possible user state
-			binding.feedback5pointLargeStarsView.setRating(0.0f);
-			binding.feedback5pointSmallStarsView.setRating(0.0f);
-
-			int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
-			binding.feedback2pointLargeNegativeView.setTag(null);
-			binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-			binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-			binding.feedback2pointLargePositiveView.setTag(null);
-			binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-			binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
 		}
 
 		// Don't use showInput from DialogState, see ChatViewState

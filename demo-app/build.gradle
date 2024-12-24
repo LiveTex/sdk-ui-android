@@ -9,7 +9,7 @@ android {
 		applicationId "ru.livetex.demoapp"
 		minSdkVersion 21
 		targetSdkVersion 34
-		versionCode 21
+		versionCode 23
 		versionName "1.15"
 	}
 
