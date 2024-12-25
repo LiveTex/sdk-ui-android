@@ -804,18 +804,19 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 
 		binding.feedbackContainerView.setVisibility(shouldShowFeedback ? View.VISIBLE : View.GONE);
 
-		// clear possible user state
-		binding.feedback5pointLargeStarsView.setRating(0.0f);
-		binding.feedback5pointSmallStarsView.setRating(0.0f);
+		if (stateToUse.rate == null || stateToUse.rate.isSet == null) {
+			// clear possible user state
+			binding.feedback5pointLargeStarsView.setRating(0.0f);
+			binding.feedback5pointSmallStarsView.setRating(0.0f);
 
-		int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
-		binding.feedback2pointLargeNegativeView.setTag(null);
-		binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-		binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-		binding.feedback2pointLargePositiveView.setTag(null);
-		binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-		binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
-
+			int inactiveColor = RatingConst.COLOR_INACTIVE_THUMB;
+			binding.feedback2pointLargeNegativeView.setTag(null);
+			binding.feedback2pointSmallNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargeNegativeView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargePositiveView.setTag(null);
+			binding.feedback2pointSmallPositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+			binding.feedback2pointLargePositiveView.setImageTintList(ColorStateList.valueOf(inactiveColor));
+		}
 
 		if (shouldShowFeedback) {
 			// clear state and try to preserve user state
