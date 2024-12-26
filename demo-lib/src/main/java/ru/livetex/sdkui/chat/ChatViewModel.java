@@ -9,7 +9,6 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +23,6 @@ import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.internal.functions.Functions;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
 import ru.livetex.sdk.LiveTex;
@@ -49,6 +47,7 @@ import ru.livetex.sdkui.chat.db.Mapper;
 import ru.livetex.sdkui.chat.db.entity.ChatMessage;
 import ru.livetex.sdkui.chat.db.entity.MessageSentState;
 import ru.livetex.sdkui.utils.IntentUtils;
+import ru.livetex.sdkui.utils.Optional;
 
 public final class ChatViewModel extends ViewModel {
 	private static final String TAG = "ChatViewModel";
@@ -66,6 +65,7 @@ public final class ChatViewModel extends ViewModel {
 	final List<ChatViewState> pendingViewStates = new ArrayList<>();
 	final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
 	final BehaviorSubject<Boolean> updateMessagesSignal = BehaviorSubject.createDefault(false);
+	final BehaviorSubject<Optional<DialogState>> pendingRatingPanelState = BehaviorSubject.createDefault(Optional.empty());
 
 	// File for upload
 	Uri selectedFile = null;
@@ -342,7 +342,10 @@ public final class ChatViewModel extends ViewModel {
 		Disposable d = Completable.fromAction(() -> messagesHandler.sendRatingEvent(isPositive, comment))
 				.subscribeOn(Schedulers.io())
 				.observeOn(Schedulers.io())
-				.subscribe(Functions.EMPTY_ACTION, e -> {
+				.subscribe(() -> {
+					// State will be cleaned in app exit
+					//pendingRatingPanelState.onNext(Optional.empty());
+				}, e -> {
 					Log.e(TAG, "sendFeedback2points error", e);
 				});
 		disposables.add(d);
@@ -353,7 +356,10 @@ public final class ChatViewModel extends ViewModel {
 		Disposable d = Completable.fromAction(() -> messagesHandler.sendRatingEvent((short) Math.round(rating), comment))
 				.subscribeOn(Schedulers.io())
 				.observeOn(Schedulers.io())
-				.subscribe(Functions.EMPTY_ACTION, e -> {
+				.subscribe(() -> {
+					// State will be cleaned in app exit
+					//pendingRatingPanelState.onNext(Optional.empty());
+				}, e -> {
 					Log.e(TAG, "sendFeedback5points error", e);
 				});
 		disposables.add(d);
@@ -516,12 +522,12 @@ public final class ChatViewModel extends ViewModel {
 		}
 
 		// In-chat rating item
-		boolean shouldShowFeedback = state.rate != null &&
+		boolean shouldShowBottomFeedback = state.rate != null &&
 				state.rate.enabledType != null &&
 				state.status == DialogState.DialogStatus.UNASSIGNED;
 
 		boolean notify;
-		if (shouldShowFeedback) {
+		if (shouldShowBottomFeedback) {
 			Date date;
 
 			if (ratingChatItem == null) {
@@ -557,6 +563,19 @@ public final class ChatViewModel extends ViewModel {
 
 		if (notify) {
 			updateMessagesSignal.onNext(true);
+		}
+
+		// Logic to leave the panel rating display
+		boolean shouldShowTopFeedback = state.rate != null &&
+				state.rate.enabledType != null &&
+				state.status != DialogState.DialogStatus.UNASSIGNED;
+		// Update existing state to show proper rating
+		boolean shouldUpdateTopFeedback = pendingRatingPanelState.getValue().isPresent() &&
+				state.rate != null/* &&
+				state.rate.isSet != null*/;
+
+		if (shouldShowTopFeedback || shouldUpdateTopFeedback) {
+			pendingRatingPanelState.onNext(Optional.of(state));
 		}
 
 		dialogStateUpdateLiveData.postValue(state);
