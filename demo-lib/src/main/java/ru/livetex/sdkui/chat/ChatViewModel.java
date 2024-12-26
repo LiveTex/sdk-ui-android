@@ -569,8 +569,12 @@ public final class ChatViewModel extends ViewModel {
 		boolean shouldShowTopFeedback = state.rate != null &&
 				state.rate.enabledType != null &&
 				state.status != DialogState.DialogStatus.UNASSIGNED;
+		// Update existing state to show proper rating
+		boolean shouldUpdateTopFeedback = pendingRatingPanelState.getValue().isPresent() &&
+				state.rate != null/* &&
+				state.rate.isSet != null*/;
 
-		if (shouldShowTopFeedback) {
+		if (shouldShowTopFeedback || shouldUpdateTopFeedback) {
 			pendingRatingPanelState.onNext(Optional.of(state));
 		}
 

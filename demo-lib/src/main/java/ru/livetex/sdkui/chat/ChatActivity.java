@@ -827,7 +827,8 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 			boolean userSet5points = binding.feedback5pointLargeStarsView.getRating() > 0.0f;
 			binding.feedback5pointRateView.setEnabled(userSet5points);
 
-			if (stateToUse.rate.enabledType == DialogRatingType.DOUBLE_POINT) {
+			if (stateToUse.rate.enabledType == DialogRatingType.DOUBLE_POINT ||
+					(stateToUse.rate.isSet != null && stateToUse.rate.isSet.type == DialogRatingType.DOUBLE_POINT)) {
 				binding.feedback2pointsContainerView.setVisibility(View.VISIBLE);
 
 				// try to preserve user state, if any
@@ -871,7 +872,8 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 				} else {
 					// do nothing?
 				}
-			} else if (stateToUse.rate.enabledType == DialogRatingType.FIVE_POINT) {
+			} else if (stateToUse.rate.enabledType == DialogRatingType.FIVE_POINT ||
+					(stateToUse.rate.isSet != null && stateToUse.rate.isSet.type == DialogRatingType.FIVE_POINT)) {
 				binding.feedback5pointsContainerView.setVisibility(View.VISIBLE);
 
 				// try to preserve user state, if any
