@@ -5,12 +5,12 @@ apply plugin: 'maven-publish' // for Jitpack
 group='com.github.LiveTex' // for Jitpack
 
 android {
-	compileSdkVersion 34
+	compileSdkVersion 35
 	namespace 'ru.livetex.sdkui'
 
 	defaultConfig {
 		minSdkVersion 21
-		targetSdkVersion 34
+		targetSdkVersion 35
 		consumerProguardFiles = ['proguard-rules.pro']
 	}
 
