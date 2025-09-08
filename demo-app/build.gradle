@@ -9,8 +9,8 @@ android {
 		applicationId "ru.livetex.demoapp"
 		minSdkVersion 21
 		targetSdkVersion 35
-		versionCode 24
-		versionName "1.16"
+		versionCode 26
+		versionName "1.18"
 	}
 
 	buildTypes {
@@ -70,4 +70,6 @@ dependencies {
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 	// Firebase services
 	implementation 'com.google.firebase:firebase-messaging:24.1.0'
+
+	implementation 'com.squareup.okhttp3:okhttp:3.14.7'
 }

@@ -78,8 +78,8 @@ dependencies {
 	implementation 'com.github.MikeOrtiz:TouchImageView:a64b584fef'
 	implementation 'com.github.bumptech.glide:glide:4.15.1'
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
+	implementation 'com.github.yalantis:ucrop:2.2.11'
 	// misc
-	implementation 'com.github.maxxx:uCrop:2.3.1'
 	implementation 'com.github.wdsqjq:AndRatingBar:1.0.6'
 }
 
