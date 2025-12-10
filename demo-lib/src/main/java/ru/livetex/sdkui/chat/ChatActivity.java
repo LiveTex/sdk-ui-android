@@ -275,10 +275,10 @@ public class ChatActivity extends AppCompatActivity implements LivetexPickerHand
 		adapter.setOnFileClickListener(fileUrl -> {
 			// Download file or open full screen image
 			// todo: will be something better in future
-			boolean isImgFile = fileUrl.contains("jpg") ||
-					fileUrl.contains("jpeg") ||
-					fileUrl.contains("png") ||
-					fileUrl.contains("bmp");
+			boolean isImgFile = fileUrl.toLowerCase().endsWith("jpg") ||
+					fileUrl.toLowerCase().endsWith("jpeg") ||
+					fileUrl.toLowerCase().endsWith("png") ||
+					fileUrl.toLowerCase().endsWith("bmp");
 
 			if (isImgFile) {
 				ImageActivity.start(this, fileUrl);
