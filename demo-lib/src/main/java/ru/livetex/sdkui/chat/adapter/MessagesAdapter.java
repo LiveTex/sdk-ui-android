@@ -197,10 +197,10 @@ public final class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.
 
 				if (!TextUtils.isEmpty(message.fileUrl)) {
 					// todo: will be something better in future
-					boolean isImgFile = message.fileUrl.contains("jpg") ||
-							message.fileUrl.contains("jpeg") ||
-							message.fileUrl.contains("png") ||
-							message.fileUrl.contains("bmp");
+					boolean isImgFile = message.fileUrl.toLowerCase().endsWith("jpg") ||
+							message.fileUrl.toLowerCase().endsWith("jpeg") ||
+							message.fileUrl.toLowerCase().endsWith("png") ||
+							message.fileUrl.toLowerCase().endsWith("bmp");
 
 					if (isImgFile) {
 						if (message.isIncoming) {
