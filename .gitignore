@@ -7,4 +7,6 @@
 /captures
 .externalNativeBuild
 .cxx
-/demo/*.jks
+*.jks
+*.keystore
+keystore.properties
