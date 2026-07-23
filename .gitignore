@@ -10,3 +10,4 @@
 *.jks
 *.keystore
 keystore.properties
+upload_certificate.pem
