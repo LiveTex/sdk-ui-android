@@ -2,15 +2,32 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+	keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
-	compileSdkVersion 35
+	compileSdkVersion 36
 
 	defaultConfig {
 		applicationId "ru.livetex.demoapp"
 		minSdkVersion 21
-		targetSdkVersion 35
-		versionCode 26
-		versionName "1.18"
+		targetSdkVersion 36
+		versionCode 29
+		versionName "1.20"
+	}
+
+	signingConfigs {
+		release {
+			if (keystorePropertiesFile.exists()) {
+				storeFile rootProject.file(keystoreProperties['storeFile'])
+				storePassword keystoreProperties['storePassword']
+				keyAlias keystoreProperties['keyAlias']
+				keyPassword keystoreProperties['keyPassword']
+			}
+		}
 	}
 
 	buildTypes {
@@ -22,6 +39,9 @@ android {
 			minifyEnabled true
 			shrinkResources true
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+			if (keystorePropertiesFile.exists()) {
+				signingConfig signingConfigs.release
+			}
 		}
 	}
 

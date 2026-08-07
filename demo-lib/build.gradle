@@ -5,12 +5,12 @@ apply plugin: 'maven-publish' // for Jitpack
 group='com.github.LiveTex' // for Jitpack
 
 android {
-	compileSdkVersion 35
+	compileSdkVersion 36
 	namespace 'ru.livetex.sdkui'
 
 	defaultConfig {
 		minSdkVersion 21
-		targetSdkVersion 35
+		targetSdkVersion 36
 		consumerProguardFiles = ['proguard-rules.pro']
 	}
 
@@ -75,7 +75,7 @@ dependencies {
 	implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 	// image
-	implementation 'com.github.MikeOrtiz:TouchImageView:a64b584fef'
+	implementation 'com.github.MikeOrtiz:TouchImageView:3.7.2'
 	implementation 'com.github.bumptech.glide:glide:4.15.1'
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 	implementation 'com.github.yalantis:ucrop:2.2.11'
